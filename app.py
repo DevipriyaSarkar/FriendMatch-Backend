@@ -141,6 +141,21 @@ def suggest_my_friends():
         return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
 
 
+@app.route('/user/common/hobby/<int:user_id>')
+def get_my_common_hobbies_with(user_id):
+    if session.get('user'):
+        try:
+            user_id_1 = session.get('user')
+            user_id_2 = user_id
+            return redirect(url_for('get_common_hobbies_between', user_id_1=user_id_1, user_id_2=user_id_2)), 302
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+
+
 @app.route('/user/<int:user_id>/info')
 def get_user_info(user_id):
     if session.get('user'):
@@ -163,7 +178,7 @@ def get_user_info(user_id):
                     'location': result[0][5],
                     'phone_number': result[0][6]
                 }
-            return json.dumps({'message': info, 'code': 200}), 200
+            return json.dumps({'message': {'info': info}, 'code': 200}), 200
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
@@ -198,7 +213,7 @@ def get_user_friends(user_id):
                     }
                 friends_dict.append(info_dict)
 
-            return json.dumps({'message': friends_dict, 'code': 200}), 200
+            return json.dumps({'message': {'friends': friends_dict}, 'code': 200}), 200
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
@@ -235,7 +250,39 @@ def suggest_user_friends(user_id):
                     }
                 suggestion_dict.append(suggestion)
 
-            return json.dumps({'message': suggestion_dict, 'code': 200}), 200
+            return json.dumps({'message': {'suggestions': suggestion_dict}, 'code': 200}), 200
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+
+
+@app.route('/user/<int:user_id_1>/common/hobby/<int:user_id_2>')
+def get_common_hobbies_between(user_id_1, user_id_2):
+    if session.get('user'):
+        cursor = None
+        con = None
+        try:
+            _user_id_1 = user_id_1
+            _user_id_2 = user_id_2
+
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_showCommonHobby', (_user_id_1, _user_id_2))
+            result = cursor.fetchall()
+
+            common_hobby_dict = []
+
+            for hobby in result:
+                common_hobby_dict.append(hobby[0])
+
+            return json.dumps({'message': {'common_hobby': common_hobby_dict}, 'code': 200}), 200
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
