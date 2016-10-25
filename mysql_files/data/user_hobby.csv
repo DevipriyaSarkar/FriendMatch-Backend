@@ -1,5 +1,28 @@
-id,friend_id
-2,1
-3,1
-1,2
-1,3
+id,hobby
+5,ballet
+3,"clash of clans"
+6,"clash of clans"
+1,coding
+2,coding
+3,coding
+6,coding
+11,dance
+9,dancing
+4,drawing
+8,movies
+9,movies
+1,music
+2,music
+4,music
+5,music
+8,music
+9,music
+1,painting
+3,photography
+10,poetry
+10,programming
+7,singing
+11,singing
+7,sketching
+4,"tv shows"
+5,"tv shows"
