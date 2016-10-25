@@ -1,10 +1,8 @@
-from flask import Flask, render_template, json, request, redirect, session, url_for
+import os
+
+from flask import Flask, json, request, redirect, session, url_for
 from flaskext.mysql import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.wsgi import LimitedStream
-import uuid
-import os
-import requests
 
 app = Flask(__name__)
 mysql = MySQL()
@@ -19,29 +17,6 @@ mysql.init_app(app)
 
 # Default setting
 pageLimit = 5
-
-
-# Define routes for the examples to actually run
-@app.route('/run_get')
-def run_get():
-    url = 'https://api.github.com/users/runnable'
-
-    # this issues a GET to the url. replace "get" with "post", "head",
-    # "put", "patch"... to make a request using a different method
-    r = requests.get(url)
-
-    return json.dumps(r.json(), indent=4)
-
-
-@app.route('/run_post')
-def run_post():
-    url = 'https://gurujsonrpc.appspot.com/guru'
-    data = {'a': 10, 'b': [{'c': True, 'd': False}, None]}
-    headers = {'Content-Type': 'application/json'}
-
-    r = requests.post(url, data=json.dumps(data), headers=headers)
-
-    return json.dumps(r.json(), indent=4)
 
 
 @app.route('/')
@@ -81,7 +56,7 @@ def sign_up():
             return json.dumps({'message': 'Invalid input', 'code': 400}), 400
 
     except Exception as e:
-        return json.dumps({'message': str(e), 'code':400}), 400
+        return json.dumps({'message': str(e), 'code': 400}), 400
 
     finally:
         cursor.close()
@@ -111,7 +86,7 @@ def validate_login():
             return json.dumps({'message': 'Incorrect username or password.', 'code': 400}), 400
 
     except Exception as e:
-        return render_template('error.html', error=str(e))
+        return json.dumps({'message': str(e), 'code': 400}), 400
 
     finally:
         cursor.close()
@@ -152,7 +127,21 @@ def get_my_friends():
         return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
 
 
-@app.route('/user/info/<int:user_id>')
+@app.route('/user/suggest/friends')
+def suggest_my_friends():
+    if session.get('user'):
+        try:
+            user_id = session.get('user')
+            return redirect(url_for('suggest_user_friends', user_id=user_id)), 302
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+
+
+@app.route('/user/<int:user_id>/info')
 def get_user_info(user_id):
     if session.get('user'):
         cursor = None
@@ -187,7 +176,7 @@ def get_user_info(user_id):
         return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
 
 
-@app.route('/user/friends/<int:user_id>')
+@app.route('/user/<int:user_id>/friends')
 def get_user_friends(user_id):
     if session.get('user'):
         cursor = None
@@ -210,6 +199,43 @@ def get_user_friends(user_id):
                 friends_dict.append(info_dict)
 
             return json.dumps({'message': friends_dict, 'code': 200}), 200
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+
+
+@app.route('/user/<int:user_id>/suggest/friends')
+def suggest_user_friends(user_id):
+    if session.get('user'):
+        cursor = None
+        con = None
+        try:
+            _req_user = user_id
+
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_suggestFriend', (_req_user, ))
+            result = cursor.fetchall()
+
+            suggestion_dict = []
+
+            for friend in result:
+                suggestion = {
+                        'id': friend[0],
+                        'user_name': friend[1],
+                        'age': friend[2],
+                        'gender': friend[3]
+                    }
+                suggestion_dict.append(suggestion)
+
+            return json.dumps({'message': suggestion_dict, 'code': 200}), 200
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
