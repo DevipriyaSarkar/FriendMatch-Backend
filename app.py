@@ -95,8 +95,12 @@ def validate_login():
 
 @app.route('/logout')
 def logout():
-    session.pop('user', None)
-    return redirect('/'), 200
+    if session.get('user'):
+        session.pop('user', None)
+        return redirect('/'), 200
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
 
 
 @app.route('/user/info')
