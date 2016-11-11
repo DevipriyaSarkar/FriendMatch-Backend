@@ -26,7 +26,7 @@ def main():
 
 @app.route('/test')
 def test():
-    return json.dumps({'message': 'Friend Match working.', 'code': 200}), 200
+    return json.dumps({'message': 'Friend Match working.', 'code': 200})
 
 
 @app.route('/sign_up', methods=['POST', 'GET'])
@@ -49,14 +49,14 @@ def sign_up():
 
             if len(data) is 0:
                 con.commit()
-                return json.dumps({'message': 'User created successfully.', 'code':201}), 201
+                return json.dumps({'message': 'User created successfully.', 'code': 201})
             else:
-                return json.dumps({'message': str(data[0]), 'code': 400}), 400
+                return json.dumps({'message': str(data[0]), 'code': 400})
         else:
-            return json.dumps({'message': 'Invalid input', 'code': 400}), 400
+            return json.dumps({'message': 'Invalid input', 'code': 400})
 
     except Exception as e:
-        return json.dumps({'message': str(e), 'code': 400}), 400
+        return json.dumps({'message': str(e), 'code': 400})
 
     finally:
         cursor.close()
@@ -79,11 +79,11 @@ def validate_login():
         if len(data) > 0:
             if check_password_hash(str(data[0][3]), _password):
                 session['user'] = data[0][0]
-                return json.dumps({'message': 'User validated.', 'code': 200}), 200
+                return json.dumps({'message': 'User validated.', 'code': 200})
             else:
-                return json.dumps({'message': 'Incorrect username or password.', 'code': 401}), 401
+                return json.dumps({'message': 'Incorrect username or password.', 'code': 401})
         else:
-            return json.dumps({'message': 'Incorrect username or password.', 'code': 400}), 400
+            return json.dumps({'message': 'Incorrect username or password.', 'code': 400})
 
     except Exception as e:
         return json.dumps({'message': str(e), 'code': 400}), 400
@@ -100,7 +100,7 @@ def logout():
         return redirect('/'), 200
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/info')
@@ -108,13 +108,13 @@ def get_my_info():
     if session.get('user'):
         try:
             user_id = session.get('user')
-            return redirect(url_for('get_user_info', user_id=user_id)), 302
+            return redirect(url_for('get_user_info', user_id=user_id))
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/friends')
@@ -122,13 +122,13 @@ def get_my_friends():
     if session.get('user'):
         try:
             user_id = session.get('user')
-            return redirect(url_for('get_user_friends', user_id=user_id)), 302
+            return redirect(url_for('get_user_friends', user_id=user_id))
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/suggest/friends')
@@ -136,13 +136,13 @@ def suggest_my_friends():
     if session.get('user'):
         try:
             user_id = session.get('user')
-            return redirect(url_for('suggest_user_friends', user_id=user_id)), 302
+            return redirect(url_for('suggest_user_friends', user_id=user_id))
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/hobby')
@@ -150,13 +150,13 @@ def get_my_hobby():
     if session.get('user'):
         try:
             user_id = session.get('user')
-            return redirect(url_for('get_user_hobby', user_id=user_id)), 302
+            return redirect(url_for('get_user_hobby', user_id=user_id))
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/common/hobby/<int:user_id>')
@@ -165,13 +165,13 @@ def get_my_common_hobbies_with(user_id):
         try:
             user_id_1 = session.get('user')
             user_id_2 = user_id
-            return redirect(url_for('get_common_hobbies_between', user_id_1=user_id_1, user_id_2=user_id_2)), 302
+            return redirect(url_for('get_common_hobbies_between', user_id_1=user_id_1, user_id_2=user_id_2))
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/profile')
@@ -179,13 +179,13 @@ def get_my_profile():
     if session.get('user'):
         try:
             user_id = session.get('user')
-            return redirect(url_for('get_user_profile', user_id=user_id)), 302
+            return redirect(url_for('get_user_profile', user_id=user_id))
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/<int:user_id>/info')
@@ -210,17 +210,17 @@ def get_user_info(user_id):
                     'location': result[0][5],
                     'phone_number': result[0][6]
                 }
-            return json.dumps({'message': {'info': info}, 'code': 200}), 200
+            return json.dumps({'message': {'info': info}, 'code': 200})
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
         finally:
             cursor.close()
             con.close()
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/<int:user_id>/friends')
@@ -245,17 +245,17 @@ def get_user_friends(user_id):
                     }
                 friends_dict.append(info_dict)
 
-            return json.dumps({'message': {'friends': friends_dict}, 'code': 200}), 200
+            return json.dumps({'message': {'friends': friends_dict}, 'code': 200})
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
         finally:
             cursor.close()
             con.close()
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/<int:user_id>/suggest/friends')
@@ -282,17 +282,17 @@ def suggest_user_friends(user_id):
                     }
                 suggestion_dict.append(suggestion)
 
-            return json.dumps({'message': {'suggestions': suggestion_dict}, 'code': 200}), 200
+            return json.dumps({'message': {'suggestions': suggestion_dict}, 'code': 200})
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
         finally:
             cursor.close()
             con.close()
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/<int:user_id>/hobby')
@@ -313,17 +313,17 @@ def get_user_hobby(user_id):
             for hobby in result:
                 hobby_dict.append(hobby[0])
 
-            return json.dumps({'message': {'hobby': hobby_dict}, 'code': 200}), 200
+            return json.dumps({'message': {'hobby': hobby_dict}, 'code': 200})
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
         finally:
             cursor.close()
             con.close()
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/<int:user_id_1>/common/hobby/<int:user_id_2>')
@@ -345,17 +345,17 @@ def get_common_hobbies_between(user_id_1, user_id_2):
             for hobby in result:
                 common_hobby_dict.append(hobby[0])
 
-            return json.dumps({'message': {'common_hobby': common_hobby_dict}, 'code': 200}), 200
+            return json.dumps({'message': {'common_hobby': common_hobby_dict}, 'code': 200})
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
         finally:
             cursor.close()
             con.close()
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/<int:user_id>/profile')
@@ -395,7 +395,7 @@ def get_user_profile(user_id):
             code_i = 200
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
         finally:
             cursor1.close()
@@ -419,7 +419,7 @@ def get_user_profile(user_id):
             code_f = 200
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
         finally:
             cursor2.close()
@@ -445,7 +445,7 @@ def get_user_profile(user_id):
             code_s = 200
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
         finally:
             cursor3.close()
@@ -465,7 +465,7 @@ def get_user_profile(user_id):
             code_h = 200
 
         except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
         finally:
             cursor4.close()
@@ -489,7 +489,7 @@ def get_user_profile(user_id):
                 code_ch = 200
 
             except Exception as e:
-                return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400}), 400
+                return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
             finally:
                 cursor5.close()
@@ -511,10 +511,10 @@ def get_user_profile(user_id):
         final_list.append(hj)
         final_list.append(chj)
 
-        return json.dumps({'message': final_list, 'code': 200}), 200
+        return json.dumps({'message': final_list, 'code': 200})
 
     else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401}), 401
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 if __name__ == '__main__':
