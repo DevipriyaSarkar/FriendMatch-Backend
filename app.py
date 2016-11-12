@@ -68,12 +68,12 @@ def validate_login():
     cursor = None
     con = None
     try:
-        _username = request.args['inputEmail']
+        _email = request.args['inputEmail']
         _password = request.args['inputPassword']
 
         con = mysql.connect()
         cursor = con.cursor()
-        cursor.callproc('sp_validateLogin', (_username,))
+        cursor.callproc('sp_validateLogin', (_email, ))
         data = cursor.fetchall()
 
         if len(data) > 0:
@@ -204,12 +204,13 @@ def get_user_info(user_id):
             info = {
                     'id': result[0][0],
                     'user_name': result[0][1],
-                    'age': result[0][2],
-                    'gender': result[0][3],
-                    'city': result[0][4],
-                    'location': result[0][5],
-                    'phone_number': result[0][6]
-                }
+                    'user_email': result[0][2],
+                    'age': result[0][3],
+                    'gender': result[0][4],
+                    'city': result[0][5],
+                    'location': result[0][6],
+                    'phone_number': result[0][7]
+            }
             return json.dumps({'message': {'info': info}, 'code': 200})
 
         except Exception as e:
@@ -383,13 +384,14 @@ def get_user_profile(user_id):
             result = cursor1.fetchall()
 
             user_info = {
-                'id': result[0][0],
-                'user_name': result[0][1],
-                'age': result[0][2],
-                'gender': result[0][3],
-                'city': result[0][4],
-                'location': result[0][5],
-                'phone_number': result[0][6]
+                    'id': result[0][0],
+                    'user_name': result[0][1],
+                    'user_email': result[0][2],
+                    'age': result[0][3],
+                    'gender': result[0][4],
+                    'city': result[0][5],
+                    'location': result[0][6],
+                    'phone_number': result[0][7]
             }
 
             code_i = 200
