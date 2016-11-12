@@ -242,7 +242,8 @@ def get_user_friends(user_id):
             for info in result:
                 info_dict = {
                         'friend_id': info[0],
-                        'user_name': info[1]
+                        'user_name': info[1],
+                        'gender': info[2]
                     }
                 friends_dict.append(info_dict)
 
@@ -414,7 +415,8 @@ def get_user_profile(user_id):
             for info in result:
                 info_dict = {
                         'friend_id': info[0],
-                        'user_name': info[1]
+                        'user_name': info[1],
+                        'gender': info[2]
                     }
                 friends_dict.append(info_dict)
 
