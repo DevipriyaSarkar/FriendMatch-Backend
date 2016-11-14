@@ -5,7 +5,7 @@ USE friend_match;
 CREATE TABLE `user` (
   `user_id` BIGINT NULL AUTO_INCREMENT,
   `user_name` VARCHAR(45) NULL,
-  `user_username` VARCHAR(45) NULL,
+  `user_email` VARCHAR(45) NULL,
   `user_password` VARCHAR(100) NULL,
   CONSTRAINT `pk_user_id` PRIMARY KEY (`user_id`));
 
