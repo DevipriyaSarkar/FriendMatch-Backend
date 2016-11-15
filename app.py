@@ -313,7 +313,11 @@ def get_user_hobby(user_id):
             hobby_dict = []
 
             for hobby in result:
-                hobby_dict.append(hobby[0])
+                h_dict = {
+                    'hobby_id': hobby[0],
+                    'hobby_name': hobby[1]
+                }
+                hobby_dict.append(h_dict)
 
             return json.dumps({'message': {'hobby': hobby_dict}, 'code': 200})
 
@@ -345,7 +349,11 @@ def get_common_hobbies_between(user_id_1, user_id_2):
             common_hobby_dict = []
 
             for hobby in result:
-                common_hobby_dict.append(hobby[0])
+                hobby_dict = {
+                    'hobby_id': hobby[0],
+                    'hobby_name': hobby[1]
+                }
+                common_hobby_dict.append(hobby_dict)
 
             return json.dumps({'message': {'common_hobby': common_hobby_dict}, 'code': 200})
 
@@ -464,7 +472,11 @@ def get_user_profile(user_id):
             result = cursor4.fetchall()
 
             for hobby in result:
-                hobby_dict.append(hobby[0])
+                h_dict = {
+                    'hobby_id': hobby[0],
+                    'hobby_name': hobby[1]
+                }
+                hobby_dict.append(h_dict)
 
             code_h = 200
 
@@ -488,7 +500,11 @@ def get_user_profile(user_id):
                 result = cursor5.fetchall()
 
                 for hobby in result:
-                    common_hobby_dict.append(hobby[0])
+                    h_dict = {
+                        'hobby_id': hobby[0],
+                        'hobby_name': hobby[1]
+                    }
+                    common_hobby_dict.append(h_dict)
 
                 code_ch = 200
 

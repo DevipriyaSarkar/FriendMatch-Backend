@@ -1,25 +1,20 @@
-hobby_name,related_hobby
-photography,
-poetry,
-"tv shows",
-dancing,ballet
-"mobile games","candy crush"
-"mobile games","clash of clans"
-programming,coding
-dancing,dance
-ballet,dancing
-dance,dancing
-painting,drawing
-sketching,drawing
-"mobile games","mini militia"
-"candy crush","mobile games"
-"clash of clans","mobile games"
-"mini militia","mobile games"
-"pokemon go","mobile games"
-singing,music
-drawing,painting
-sketching,painting
-"mobile games","pokemon go"
-coding,programming
-music,singing
-movies,"tv shows"
+hobby_id,hobby_name
+1,ballet
+2,candy crush
+3,clash of clans
+4,coding
+5,dance
+6,dancing
+7,drawing
+8,mini militia
+9,mobile games
+10,movies
+11,music
+12,painting
+13,photography
+14,poetry
+15,pokemon go
+16,programming
+17,singing
+18,sketching
+19,tv shows

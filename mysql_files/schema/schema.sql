@@ -24,18 +24,29 @@ CREATE TABLE `user_details` (
 );
 
 CREATE TABLE `hobby` (
-	`hobby_name` VARCHAR(45) NULL,
-    `related_hobby` VARCHAR(45) NULL,
-    CONSTRAINT `pk_hobby` PRIMARY KEY(`hobby_name`, `related_hobby`)
+	`hobby_id` BIGINT NULL AUTO_INCREMENT,
+    `hobby_name` VARCHAR(45) NULL,
+    CONSTRAINT `pk_hobby_id` PRIMARY KEY(`hobby_id`)
 );
-
 
 CREATE TABLE `user_hobby` (
 	`id` BIGINT NULL,
-    `hobby` VARCHAR(45) NULL,
-    CONSTRAINT `pk_user_hobby` PRIMARY KEY(`id`, `hobby`),
+    `hobby_id` BIGINT NULL,
+    CONSTRAINT `pk_user_hobby` PRIMARY KEY(`id`, `hobby_id`),
     CONSTRAINT `fk_user_hobby_user_id` FOREIGN KEY(`id`)
-    REFERENCES `user`(`user_id`) ON DELETE CASCADE
+    REFERENCES `user`(`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_user_hobby_id` FOREIGN KEY(`hobby_id`)
+    REFERENCES `hobby`(`hobby_id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `related_hobby` (
+	`hobby_id` BIGINT NULL,
+    `related_hobby_id` BIGINT NULL,
+    CONSTRAINT `pk_related_hobby` PRIMARY KEY(`hobby_id`, `related_hobby_id`),
+    CONSTRAINT `fk_hobby_id` FOREIGN KEY(`hobby_id`)
+    REFERENCES `hobby`(`hobby_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_related_hobby_id` FOREIGN KEY(`related_hobby_id`)
+    REFERENCES `hobby`(`hobby_id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `user_available_time` (
