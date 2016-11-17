@@ -1,4 +1,5 @@
 import os
+import datetime
 
 from flask import Flask, json, request, redirect, session, url_for
 from flaskext.mysql import MySQL
@@ -225,6 +226,34 @@ def delete_my_friend(user_id):
             user_id_1 = session.get('user')
             user_id_2 = user_id
             return redirect(url_for('delete_user_friend', user_id_1=user_id_1, user_id_2=user_id_2))
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/add/event/<int:hobby_id>')
+def add_my_event(hobby_id):
+    if session.get('user'):
+        try:
+            user_id = session.get('user')
+            return redirect(url_for('add_user_event', user_id=user_id, hobby_id=hobby_id))
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/delete/event/<int:hobby_id>')
+def delete_my_event(hobby_id):
+    if session.get('user'):
+        try:
+            user_id = session.get('user')
+            return redirect(url_for('delete_user_event', user_id=user_id, hobby_id=hobby_id))
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
@@ -717,7 +746,7 @@ def delete_user_friend(user_id_1, user_id_2):
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
-@app.route('/all_hobby')
+@app.route('/all/hobby')
 def get_all_hobbies():
     con = None
     cursor = None
@@ -744,6 +773,132 @@ def get_all_hobbies():
     finally:
         cursor.close()
         con.close()
+
+
+@app.route('/all/event')
+def get_all_events():
+    con = None
+    cursor = None
+    now = datetime.datetime.now()
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_getAllEvents', (now.strftime("%Y-%m-%d"), ))
+        result = cursor.fetchall()
+
+        event_dict = []
+
+        for event in result:
+            e_dict = {
+                'event_id': event[0],
+                'event_name': event[1],
+                'event_city': event[2],
+                'event_date': event[3]
+            }
+            event_dict.append(e_dict)
+
+        return json.dumps({'message': {'event': event_dict}, 'code': 200})
+
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id>/add/event/<int:hobby_id>')
+def add_user_event(user_id, hobby_id):
+    if session.get('user'):
+        cursor = None
+        con = None
+        try:
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_addEvent', (user_id, hobby_id))
+            data = cursor.fetchall()
+
+            if len(data) is 0:
+                con.commit()
+                return json.dumps({'message': 'Event added successfully.', 'code': 200})
+            else:
+                return json.dumps({'message': str(data[0]), 'code': 400})
+
+        except Exception as e:
+            return json.dumps({'message': str(e), 'code': 400}), 400
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/<int:user_id>/delete/friend/<int:hobby_id>')
+def delete_user_event(user_id, hobby_id):
+    if session.get('user'):
+        cursor = None
+        con = None
+        try:
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_deleteFriend', (user_id, hobby_id))
+            data = cursor.fetchall()
+
+            if len(data) is 0:
+                con.commit()
+                return json.dumps({'message': 'Event deleted successfully.', 'code': 200})
+            else:
+                return json.dumps({'message': str(data[0]), 'code': 400})
+
+        except Exception as e:
+            return json.dumps({'message': str(e), 'code': 400}), 400
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/<int:user_id>/suggest/events')
+def suggest_user_events(user_id):
+    if session.get('user'):
+        cursor = None
+        con = None
+        now = datetime.datetime.now()
+        try:
+            _req_user = user_id
+
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_suggestEvent', (_req_user, now.strftime("%Y-%m-%d")))
+            result = cursor.fetchall()
+
+            event_dict = []
+
+            for event in result:
+                e_dict = {
+                    'event_id': event[0],
+                    'event_name': event[1],
+                    'event_city': event[2],
+                    'event_date': event[3]
+                }
+                event_dict.append(e_dict)
+
+            return json.dumps({'message': {'suggested_event': event_dict}, 'code': 200})
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 if __name__ == '__main__':

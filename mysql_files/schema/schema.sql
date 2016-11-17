@@ -29,6 +29,14 @@ CREATE TABLE `hobby` (
     CONSTRAINT `pk_hobby_id` PRIMARY KEY(`hobby_id`)
 );
 
+CREATE TABLE `event` (
+	`event_id` BIGINT NULL AUTO_INCREMENT,
+    `event_name` VARCHAR(45) NULL,
+    `event_city` VARCHAR(20) NULL,
+    `event_date` DATE NULL,
+    CONSTRAINT `pk_event_id` PRIMARY KEY(`event_id`)
+);
+
 CREATE TABLE `user_hobby` (
 	`id` BIGINT NULL,
     `hobby_id` BIGINT NULL,
@@ -39,6 +47,16 @@ CREATE TABLE `user_hobby` (
     REFERENCES `hobby`(`hobby_id`) ON DELETE CASCADE
 );
 
+CREATE TABLE `user_event` (
+	`id` BIGINT NULL,
+    `event_id` BIGINT NULL,
+    CONSTRAINT `pk_user_event` PRIMARY KEY(`id`, `event_id`),
+    CONSTRAINT `fk_user_event_user_id` FOREIGN KEY(`id`)
+    REFERENCES `user`(`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_user_event_id` FOREIGN KEY(`event_id`)
+    REFERENCES `event`(`event_id`) ON DELETE CASCADE
+);
+
 CREATE TABLE `related_hobby` (
 	`hobby_id` BIGINT NULL,
     `related_hobby_id` BIGINT NULL,
@@ -46,6 +64,16 @@ CREATE TABLE `related_hobby` (
     CONSTRAINT `fk_hobby_id` FOREIGN KEY(`hobby_id`)
     REFERENCES `hobby`(`hobby_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_related_hobby_id` FOREIGN KEY(`related_hobby_id`)
+    REFERENCES `hobby`(`hobby_id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `event_interest_group` (
+	`event_id` BIGINT NULL,
+    `hobby_id` BIGINT NULL,
+    CONSTRAINT `pk_event_interest_group` PRIMARY KEY(`event_id`, `hobby_id`),
+    CONSTRAINT `fk_interest_group_event_id` FOREIGN KEY(`event_id`)
+    REFERENCES `event`(`event_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_interest_group_hobby_id` FOREIGN KEY(`hobby_id`)
     REFERENCES `hobby`(`hobby_id`) ON DELETE CASCADE
 );
 
