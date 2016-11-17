@@ -97,7 +97,7 @@ def validate_login():
 def logout():
     if session.get('user'):
         session.pop('user', None)
-        return redirect('/'), 200
+        return json.dumps({'message': 'Logged Out.', 'code': 200})
 
     else:
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
@@ -203,6 +203,36 @@ def get_my_profile():
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
+@app.route('/user/add/friend/<int:user_id>')
+def add_my_friend(user_id):
+    if session.get('user'):
+        try:
+            user_id_1 = session.get('user')
+            user_id_2 = user_id
+            return redirect(url_for('add_user_friend', user_id_1=user_id_1, user_id_2=user_id_2))
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/delete/friend/<int:user_id>')
+def delete_my_friend(user_id):
+    if session.get('user'):
+        try:
+            user_id_1 = session.get('user')
+            user_id_2 = user_id
+            return redirect(url_for('delete_user_friend', user_id_1=user_id_1, user_id_2=user_id_2))
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
 @app.route('/user/<int:user_id>/info')
 def get_user_info(user_id):
     if session.get('user'):
@@ -217,14 +247,14 @@ def get_user_info(user_id):
             result = cursor.fetchall()
 
             info = {
-                    'id': result[0][0],
-                    'user_name': result[0][1],
-                    'user_email': result[0][2],
-                    'age': result[0][3],
-                    'gender': result[0][4],
-                    'city': result[0][5],
-                    'location': result[0][6],
-                    'phone_number': result[0][7]
+                'id': result[0][0],
+                'user_name': result[0][1],
+                'user_email': result[0][2],
+                'age': result[0][3],
+                'gender': result[0][4],
+                'city': result[0][5],
+                'location': result[0][6],
+                'phone_number': result[0][7]
             }
             return json.dumps({'message': {'info': info}, 'code': 200})
 
@@ -256,10 +286,10 @@ def get_user_friends(user_id):
 
             for info in result:
                 info_dict = {
-                        'friend_id': info[0],
-                        'user_name': info[1],
-                        'gender': info[2]
-                    }
+                    'friend_id': info[0],
+                    'user_name': info[1],
+                    'gender': info[2]
+                }
                 friends_dict.append(info_dict)
 
             return json.dumps({'message': {'friends': friends_dict}, 'code': 200})
@@ -292,11 +322,11 @@ def suggest_user_friends(user_id):
 
             for friend in result:
                 suggestion = {
-                        'id': friend[0],
-                        'user_name': friend[1],
-                        'age': friend[2],
-                        'gender': friend[3]
-                    }
+                    'id': friend[0],
+                    'user_name': friend[1],
+                    'age': friend[2],
+                    'gender': friend[3]
+                }
                 suggestion_dict.append(suggestion)
 
             return json.dumps({'message': {'suggestions': suggestion_dict}, 'code': 200})
@@ -431,6 +461,7 @@ def get_user_profile(user_id):
     if session.get('user'):
 
         _req_user = user_id
+        _current_user = session.get('user')     # the one who called the route
 
         user_info = None
         friends_dict = []
@@ -453,14 +484,14 @@ def get_user_profile(user_id):
                 result = cursor.fetchall()
 
                 user_info = {
-                        'id': result[0][0],
-                        'user_name': result[0][1],
-                        'user_email': result[0][2],
-                        'age': result[0][3],
-                        'gender': result[0][4],
-                        'city': result[0][5],
-                        'location': result[0][6],
-                        'phone_number': result[0][7]
+                    'id': result[0][0],
+                    'user_name': result[0][1],
+                    'user_email': result[0][2],
+                    'age': result[0][3],
+                    'gender': result[0][4],
+                    'city': result[0][5],
+                    'location': result[0][6],
+                    'phone_number': result[0][7]
                 }
 
                 code_i = 200
@@ -472,13 +503,25 @@ def get_user_profile(user_id):
             try:
 
                 cursor.callproc('sp_getUserFriends', (_req_user, ))
-                result = cursor.fetchall()
+                result1 = cursor.fetchall()
 
-                for info in result:
-                    info_dict = {
+                for info in result1:
+                    cursor.callproc('sp_isFriend', (_current_user, info[0]))
+                    result2 = cursor.fetchall()
+
+                    if result2[0][0] == "TRUE":
+                        info_dict = {
                             'friend_id': info[0],
                             'user_name': info[1],
-                            'gender': info[2]
+                            'gender': info[2],
+                            'is_your_friend': True
+                        }
+                    else:
+                        info_dict = {
+                            'friend_id': info[0],
+                            'user_name': info[1],
+                            'gender': info[2],
+                            'is_your_friend': False
                         }
                     friends_dict.append(info_dict)
 
@@ -532,11 +575,11 @@ def get_user_profile(user_id):
                         result = cursor.fetchall()
 
                         for hobby in result:
-                            hobby_dict = {
+                            h_dict = {
                                 'related_hobby_id': hobby[0],
                                 'hobby_name': hobby[1]
                             }
-                            related_hobby_dict.append(hobby_dict)
+                            related_hobby_dict.append(h_dict)
 
                         code_rh = 200
 
@@ -587,9 +630,11 @@ def edit_user_profile(user_id):
             _phone = request.args['phone']
             _location = request.args['location']
             _city = request.args['city']
-            # _hobby_list = request.json['hobby_list']
+            _hobby_list = request.json
 
-            if _gender and _age and _phone and _location and _city:
+            print _hobby_list
+
+            if _gender and _age and _phone and _location and _city and _hobby_list:
 
                 con = mysql.connect()
                 cursor = con.cursor()
@@ -604,6 +649,62 @@ def edit_user_profile(user_id):
 
             else:
                 return json.dumps({'message': 'Invalid input', 'code': 400})
+
+        except Exception as e:
+            return json.dumps({'message': str(e), 'code': 400}), 400
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/<int:user_id_1>/add/friend/<int:user_id_2>')
+def add_user_friend(user_id_1, user_id_2):
+    if session.get('user'):
+        cursor = None
+        con = None
+        try:
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_addFriend', (user_id_1, user_id_2))
+            data = cursor.fetchall()
+
+            if len(data) is 0:
+                con.commit()
+                return json.dumps({'message': 'Friend added successfully.', 'code': 200})
+            else:
+                return json.dumps({'message': str(data[0]), 'code': 400})
+
+        except Exception as e:
+            return json.dumps({'message': str(e), 'code': 400}), 400
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/<int:user_id_1>/delete/friend/<int:user_id_2>')
+def delete_user_friend(user_id_1, user_id_2):
+    if session.get('user'):
+        cursor = None
+        con = None
+        try:
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_deleteFriend', (user_id_1, user_id_2))
+            data = cursor.fetchall()
+
+            if len(data) is 0:
+                con.commit()
+                return json.dumps({'message': 'Friend deleted successfully.', 'code': 200})
+            else:
+                return json.dumps({'message': str(data[0]), 'code': 400})
 
         except Exception as e:
             return json.dumps({'message': str(e), 'code': 400}), 400

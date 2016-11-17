@@ -1,5 +1,5 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_getUserInfo`(
-    p_user_id INT
+    IN p_user_id BIGINT
 )
 BEGIN
 	SELECT UD.id, UD.user_name, U.user_email, UD.age, UD.gender, UD.city, UD.location, UD.phone_number

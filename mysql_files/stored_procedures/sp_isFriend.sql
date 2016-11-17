@@ -1,6 +1,6 @@
-CREATE PROCEDURE `sp_isFriend` (
-	p_user_id1 INT,
-    p_user_id2 INT
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_isFriend` (
+	IN p_user_id1 BIGINT,
+    IN p_user_id2 BIGINT
 )
 BEGIN
 	SELECT CASE WHEN EXISTS (

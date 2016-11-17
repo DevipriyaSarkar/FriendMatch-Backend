@@ -1,6 +1,6 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_showCommonHobby`(
-    p_user_id1 INT,
-    p_user_id2 INT
+    IN p_user_id1 BIGINT,
+    IN p_user_id2 BIGINT
 )
 BEGIN
 	SELECT DISTINCT U1.hobby_id, H.hobby_name

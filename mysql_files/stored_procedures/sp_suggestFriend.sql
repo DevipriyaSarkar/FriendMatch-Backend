@@ -1,5 +1,5 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_suggestFriend`(
-    p_user_id INT
+    IN p_user_id BIGINT
 )
 BEGIN
 	(SELECT DISTINCT USER.id, USER.user_name, USER.age, USER.gender

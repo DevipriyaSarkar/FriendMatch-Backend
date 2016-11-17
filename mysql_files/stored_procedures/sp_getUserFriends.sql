@@ -1,5 +1,5 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_getUserFriends`(
-    p_user_id INT
+    IN p_user_id BIGINT
 )
 BEGIN
 	SELECT FRIEND.friend_id, USER.user_name, USER.gender 

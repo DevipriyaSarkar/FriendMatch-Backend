@@ -3,7 +3,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_updateProfile`(
     IN new_gender CHAR(1),
     IN new_age TINYINT,
     IN new_phone_number VARCHAR(20),
-    IN new_location VARCHAr(50),
+    IN new_location VARCHAR(50),
     IN new_city VARCHAR(20)
 )
 BEGIN

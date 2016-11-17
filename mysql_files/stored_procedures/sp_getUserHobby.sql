@@ -1,5 +1,5 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_getUserHobby`(
-    p_user_id INT
+    IN p_user_id BIGINT
 )
 BEGIN
 	SELECT DISTINCT UH.hobby_id, H.hobby_name 
