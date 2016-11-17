@@ -79,7 +79,7 @@ def validate_login():
         if len(data) > 0:
             if check_password_hash(str(data[0][3]), _password):
                 session['user'] = data[0][0]
-                return json.dumps({'message': 'User validated.', 'code': 200})
+                return json.dumps({'message': 'User validated.', 'user_id': data[0][0], 'code': 200})
             else:
                 return json.dumps({'message': 'Incorrect username or password.', 'code': 401})
         else:
@@ -574,6 +574,75 @@ def get_user_profile(user_id):
 
     else:
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/<int:user_id>/edit/profile', methods=['POST'])
+def edit_user_profile(user_id):
+    if session.get('user'):
+        cursor = None
+        con = None
+        try:
+            _gender = request.args['gender']
+            _age = request.args['age']
+            _phone = request.args['phone']
+            _location = request.args['location']
+            _city = request.args['city']
+            # _hobby_list = request.json['hobby_list']
+
+            if _gender and _age and _phone and _location and _city:
+
+                con = mysql.connect()
+                cursor = con.cursor()
+                cursor.callproc('sp_updateProfile', (user_id, _gender, _age, _phone, _location, _city))
+                data = cursor.fetchall()
+
+                if len(data) is 0:
+                    con.commit()
+                    return json.dumps({'message': 'User updated successfully.', 'code': 200})
+                else:
+                    return json.dumps({'message': str(data[0]), 'code': 400})
+
+            else:
+                return json.dumps({'message': 'Invalid input', 'code': 400})
+
+        except Exception as e:
+            return json.dumps({'message': str(e), 'code': 400}), 400
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/all_hobby')
+def get_all_hobbies():
+    con = None
+    cursor = None
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_getAllHobbies')
+        result = cursor.fetchall()
+
+        hobby_dict = []
+
+        for hobby in result:
+            h_dict = {
+                'hobby_id': hobby[0],
+                'hobby_name': hobby[1]
+            }
+            hobby_dict.append(h_dict)
+
+        return json.dumps({'message': {'hobby': hobby_dict}, 'code': 200})
+
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
 
 
 if __name__ == '__main__':

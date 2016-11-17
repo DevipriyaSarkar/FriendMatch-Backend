@@ -16,7 +16,7 @@ BEGIN
             user_email,
             user_password
         )
-        values
+        VALUES
         (
             new_name,
             new_email,
