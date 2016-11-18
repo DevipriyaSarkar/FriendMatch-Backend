@@ -776,11 +776,8 @@ def edit_user_profile(user_id):
             _phone = request.args['phone']
             _location = request.args['location']
             _city = request.args['city']
-            _hobby_list = request.json
 
-            print _hobby_list
-
-            if _gender and _age and _phone and _location and _city and _hobby_list:
+            if _gender and _age and _phone and _location and _city:
 
                 con = mysql.connect()
                 cursor = con.cursor()
