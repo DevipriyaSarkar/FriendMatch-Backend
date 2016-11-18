@@ -174,6 +174,20 @@ def get_my_hobby():
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
+@app.route('/user/event')
+def get_my_event():
+    if session.get('user'):
+        try:
+            user_id = session.get('user')
+            return redirect(url_for('get_user_event', user_id=user_id))
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
 @app.route('/user/common/hobby/<int:user_id>')
 def get_my_common_hobbies_with(user_id):
     if session.get('user'):
@@ -420,6 +434,44 @@ def get_user_hobby(user_id):
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
+@app.route('/user/<int:user_id>/event')
+def get_user_event(user_id):
+    if session.get('user'):
+        cursor = None
+        con = None
+        now = datetime.datetime.now()
+        try:
+            _req_user = user_id
+
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_getUserEvent', (_req_user, now.strftime("%Y-%m-%d")))
+            result = cursor.fetchall()
+
+            event_dict = []
+
+            for event in result:
+                e_dict = {
+                    'event_id': event[0],
+                    'event_name': event[1],
+                    'event_city': event[2],
+                    'event_date': event[3].strftime("%Y-%m-%d")
+                }
+                event_dict.append(e_dict)
+
+            return json.dumps({'message': {'event': event_dict}, 'code': 200})
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
 @app.route('/user/<int:user_id_1>/common/hobby/<int:user_id_2>')
 def get_common_hobbies_between(user_id_1, user_id_2):
     if session.get('user'):
@@ -578,13 +630,24 @@ def get_user_profile(user_id):
             try:
 
                 cursor.callproc('sp_getUserHobby', (_req_user,))
-                result = cursor.fetchall()
+                result1 = cursor.fetchall()
 
-                for hobby in result:
-                    h_dict = {
-                        'hobby_id': hobby[0],
-                        'hobby_name': hobby[1]
-                    }
+                for hobby in result1:
+                    cursor.callproc('sp_isUserHobby', (_current_user, hobby[0]))
+                    result2 = cursor.fetchall()
+
+                    if result2[0][0] == "TRUE":
+                        h_dict = {
+                            'hobby_id': hobby[0],
+                            'hobby_name': hobby[1],
+                            'is_user_hobby': True
+                        }
+                    else:
+                        h_dict = {
+                            'hobby_id': hobby[0],
+                            'hobby_name': hobby[1],
+                            'is_user_hobby': False
+                        }
                     hobby_dict.append(h_dict)
 
                 code_h = 200
@@ -609,7 +672,7 @@ def get_user_profile(user_id):
                             'event_id': event[0],
                             'event_name': event[1],
                             'event_city': event[2],
-                            'event_date': event[3],
+                            'event_date': event[3].strftime("%Y-%m-%d"),
                             'is_user_attending': True
                         }
                     else:
@@ -617,7 +680,7 @@ def get_user_profile(user_id):
                             'event_id': event[0],
                             'event_name': event[1],
                             'event_city': event[2],
-                            'event_date': event[3],
+                            'event_date': event[3].strftime("%Y-%m-%d"),
                             'is_user_attending': False
                         }
                     event_dict.append(e_dict)
@@ -640,7 +703,8 @@ def get_user_profile(user_id):
                     for hobby in result:
                         h_dict = {
                             'hobby_id': hobby[0],
-                            'hobby_name': hobby[1]
+                            'hobby_name': hobby[1],
+                            'is_user_hobby': True   # that is why common hobby
                         }
                         common_hobby_dict.append(h_dict)
 
@@ -656,7 +720,8 @@ def get_user_profile(user_id):
                         for hobby in result:
                             h_dict = {
                                 'related_hobby_id': hobby[0],
-                                'hobby_name': hobby[1]
+                                'hobby_name': hobby[1],
+                                'is_user_hobby': False  # not yet added to hobby list that is why not in common hobby
                             }
                             related_hobby_dict.append(h_dict)
 
@@ -800,63 +865,97 @@ def delete_user_friend(user_id_1, user_id_2):
 
 @app.route('/all/hobby')
 def get_all_hobbies():
-    con = None
-    cursor = None
-    try:
-        con = mysql.connect()
-        cursor = con.cursor()
-        cursor.callproc('sp_getAllHobbies')
-        result = cursor.fetchall()
+    if session.get('user'):
+        con = None
+        cursor = None
+        try:
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_getAllHobbies')
+            result1 = cursor.fetchall()
 
-        hobby_dict = []
+            hobby_dict = []
 
-        for hobby in result:
-            h_dict = {
-                'hobby_id': hobby[0],
-                'hobby_name': hobby[1]
-            }
-            hobby_dict.append(h_dict)
+            for hobby in result1:
+                user_id = session.get('user')
+                cursor.callproc('sp_isUserHobby', (user_id, hobby[0]))
+                result2 = cursor.fetchall()
 
-        return json.dumps({'message': {'hobby': hobby_dict}, 'code': 200})
+                if result2[0][0] == "TRUE":
+                    h_dict = {
+                        'hobby_id': hobby[0],
+                        'hobby_name': hobby[1],
+                        'is_user_hobby': True
+                    }
+                else:
+                    h_dict = {
+                        'hobby_id': hobby[0],
+                        'hobby_name': hobby[1],
+                        'is_user_hobby': False
+                    }
 
-    except Exception as e:
-        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+                hobby_dict.append(h_dict)
 
-    finally:
-        cursor.close()
-        con.close()
+            return json.dumps({'message': {'hobby': hobby_dict}, 'code': 200})
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+        finally:
+            cursor.close()
+            con.close()
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/all/event')
 def get_all_events():
-    con = None
-    cursor = None
-    now = datetime.datetime.now()
-    try:
-        con = mysql.connect()
-        cursor = con.cursor()
-        cursor.callproc('sp_getAllEvents', (now.strftime("%Y-%m-%d"), ))
-        result = cursor.fetchall()
+    if session.get('user'):
+        con = None
+        cursor = None
+        now = datetime.datetime.now()
+        try:
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_getAllEvents', (now.strftime("%Y-%m-%d"), ))
+            result1 = cursor.fetchall()
 
-        event_dict = []
+            event_dict = []
 
-        for event in result:
-            e_dict = {
-                'event_id': event[0],
-                'event_name': event[1],
-                'event_city': event[2],
-                'event_date': event[3]
-            }
-            event_dict.append(e_dict)
+            for event in result1:
+                user_id = session.get('user')
+                cursor.callproc('sp_isAttending', (user_id, event[0]))
+                result2 = cursor.fetchall()
 
-        return json.dumps({'message': {'event': event_dict}, 'code': 200})
+                if result2[0][0] == "TRUE":
+                    e_dict = {
+                        'event_id': event[0],
+                        'event_name': event[1],
+                        'event_city': event[2],
+                        'event_date': event[3].strftime("%Y-%m-%d"),
+                        'is_user_attending': True
+                    }
+                else:
+                    e_dict = {
+                        'event_id': event[0],
+                        'event_name': event[1],
+                        'event_city': event[2],
+                        'event_date': event[3].strftime("%Y-%m-%d"),
+                        'is_user_attending': False
+                    }
 
-    except Exception as e:
-        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+                event_dict.append(e_dict)
 
-    finally:
-        cursor.close()
-        con.close()
+            return json.dumps({'message': {'event': event_dict}, 'code': 200})
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+        finally:
+            cursor.close()
+            con.close()
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
 @app.route('/user/<int:user_id>/add/event/<int:hobby_id>')
@@ -936,7 +1035,7 @@ def suggest_user_events(user_id):
                     'event_id': event[0],
                     'event_name': event[1],
                     'event_city': event[2],
-                    'event_date': event[3]
+                    'event_date': event[3].strftime("%Y-%m-%d")
                 }
                 event_dict.append(e_dict)
 

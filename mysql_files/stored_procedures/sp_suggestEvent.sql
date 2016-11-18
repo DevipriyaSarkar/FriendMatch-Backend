@@ -4,7 +4,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_suggestEvent`(
 )
 BEGIN
 	(
-		SELECT DISTINCT E.event_id, E.event_name, E.event_city, E.event_date
+		SELECT DISTINCT E.event_id, E.event_name, E.event_city, DATE(E.event_date)
 		FROM `event` E, event_interest_group EG
 		WHERE E.event_date > p_date AND
 			EG.event_id = E.event_id AND
@@ -21,7 +21,7 @@ BEGIN
 	)
 	UNION
     (
-		SELECT DISTINCT E.event_id, E.event_name, E.event_city, E.event_date
+		SELECT DISTINCT E.event_id, E.event_name, E.event_city, DATE(E.event_date)
 		FROM `event` E, event_interest_group EG
 		WHERE E.event_date > p_date AND
 			EG.event_id = E.event_id AND
