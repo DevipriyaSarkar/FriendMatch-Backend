@@ -8,7 +8,6 @@ BEGIN
 		FROM `event` E, event_interest_group EG
 		WHERE E.event_date > p_date AND
 			EG.event_id = E.event_id AND
-            UE.id = p_user_id AND
             EG.event_id NOT IN
             (
 				SELECT DISTINCT event_id FROM user_event

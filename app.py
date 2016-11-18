@@ -146,6 +146,20 @@ def suggest_my_friends():
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
+@app.route('/user/suggest/events')
+def suggest_my_events():
+    if session.get('user'):
+        try:
+            user_id = session.get('user')
+            return redirect(url_for('suggest_user_events', user_id=user_id))
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
 @app.route('/user/hobby')
 def get_my_hobby():
     if session.get('user'):
@@ -497,8 +511,9 @@ def get_user_profile(user_id):
         hobby_dict = []
         common_hobby_dict = []
         related_hobby_dict = []
+        event_dict = []
 
-        code_i = code_f = code_h = code_ch = code_rh = 400
+        code_i = code_f = code_h = code_ch = code_rh = code_e = 400
 
         con = None
         cursor = None
@@ -577,6 +592,41 @@ def get_user_profile(user_id):
             except Exception as e:
                 return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
+            # fetch user events
+            try:
+
+                now = datetime.datetime.now()
+                cursor.callproc('sp_getUserEvent', (_req_user, now.strftime("%Y-%m-%d")))
+                result1 = cursor.fetchall()
+
+                for event in result1:
+
+                    cursor.callproc('sp_isAttending', (_current_user, event[0]))
+                    result2 = cursor.fetchall()
+
+                    if result2[0][0] == "TRUE":
+                        e_dict = {
+                            'event_id': event[0],
+                            'event_name': event[1],
+                            'event_city': event[2],
+                            'event_date': event[3],
+                            'is_user_attending': True
+                        }
+                    else:
+                        e_dict = {
+                            'event_id': event[0],
+                            'event_name': event[1],
+                            'event_city': event[2],
+                            'event_date': event[3],
+                            'is_user_attending': False
+                        }
+                    event_dict.append(e_dict)
+
+                code_e = 200
+
+            except Exception as e:
+                return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
             # show common and related hobby if not checking own profile
             if session.get('user') != _req_user:
                 try:
@@ -628,6 +678,7 @@ def get_user_profile(user_id):
             hj = {'hobby': hobby_dict, 'code': code_h}
             chj = {'common_hobby': common_hobby_dict, 'code': code_ch}
             rhj = {'related_hobby': related_hobby_dict, 'code': code_rh}
+            ej = {'event': event_dict, 'code': code_e}
 
             if code_rh == 204:
                 rhj = {'related_hobby': "Friends. No need to show related hobbies.", 'code': code_rh}
@@ -637,6 +688,7 @@ def get_user_profile(user_id):
             final_list.append(hj)
             final_list.append(chj)
             final_list.append(rhj)
+            final_list.append(ej)
 
             return json.dumps({'message': final_list, 'code': 200})
 
@@ -835,7 +887,7 @@ def add_user_event(user_id, hobby_id):
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
-@app.route('/user/<int:user_id>/delete/friend/<int:hobby_id>')
+@app.route('/user/<int:user_id>/delete/event/<int:hobby_id>')
 def delete_user_event(user_id, hobby_id):
     if session.get('user'):
         cursor = None
@@ -843,7 +895,7 @@ def delete_user_event(user_id, hobby_id):
         try:
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.callproc('sp_deleteFriend', (user_id, hobby_id))
+            cursor.callproc('sp_deleteEvent', (user_id, hobby_id))
             data = cursor.fetchall()
 
             if len(data) is 0:
