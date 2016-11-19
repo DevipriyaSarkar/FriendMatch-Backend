@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_deleteEvent`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_deleteUserEvent`(
 	IN p_user_id BIGINT,
     IN p_event_id BIGINT
 )
@@ -19,7 +19,7 @@ BEGIN
 				)
 			)
 		THEN
-			SELECT 'Users not attending this event !!';
+			SELECT 'User is not attending this event !!';
 		
         ELSE
 			DELETE FROM user_event

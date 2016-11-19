@@ -290,6 +290,34 @@ def delete_my_event(event_id):
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
+@app.route('/user/add/hobby/<int:hobby_id>')
+def add_my_hobby(hobby_id):
+    if session.get('user'):
+        try:
+            user_id = session.get('user')
+            return redirect(url_for('add_user_hobby', user_id=user_id, hobby_id=hobby_id))
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/delete/hobby/<int:hobby_id>')
+def delete_my_hobby(hobby_id):
+    if session.get('user'):
+        try:
+            user_id = session.get('user')
+            return redirect(url_for('delete_user_hobby', user_id=user_id, hobby_id=hobby_id))
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
 @app.route('/user/<int:user_id>/info')
 def get_user_info(user_id):
     if session.get('user'):
@@ -840,7 +868,7 @@ def delete_user_friend(user_id_1, user_id_2):
         try:
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.callproc('sp_deleteFriend', (user_id_1, user_id_2))
+            cursor.callproc('sp_deleteUserFriend', (user_id_1, user_id_2))
             data = cursor.fetchall()
 
             if len(data) is 0:
@@ -991,7 +1019,7 @@ def delete_user_event(user_id, event_id):
         try:
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.callproc('sp_deleteEvent', (user_id, event_id))
+            cursor.callproc('sp_deleteUserEvent', (user_id, event_id))
             data = cursor.fetchall()
 
             if len(data) is 0:
@@ -1040,6 +1068,62 @@ def suggest_user_events(user_id):
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/<int:user_id>/add/hobby/<int:hobby_id>')
+def add_user_hobby(user_id, hobby_id):
+    if session.get('user'):
+        cursor = None
+        con = None
+        try:
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_addUserHobby', (user_id, hobby_id))
+            data = cursor.fetchall()
+
+            if len(data) is 0:
+                con.commit()
+                return json.dumps({'message': 'Hobby added successfully.', 'code': 200})
+            else:
+                return json.dumps({'message': str(data[0]), 'code': 400})
+
+        except Exception as e:
+            return json.dumps({'message': str(e), 'code': 400}), 400
+
+        finally:
+            cursor.close()
+            con.close()
+
+    else:
+        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+
+
+@app.route('/user/<int:user_id>/delete/hobby/<int:hobby_id>')
+def delete_user_hobby(user_id, hobby_id):
+    if session.get('user'):
+        cursor = None
+        con = None
+        try:
+            con = mysql.connect()
+            cursor = con.cursor()
+            cursor.callproc('sp_deleteUserHobby', (user_id, hobby_id))
+            data = cursor.fetchall()
+
+            if len(data) is 0:
+                con.commit()
+                return json.dumps({'message': 'Hobby deleted successfully.', 'code': 200})
+            else:
+                return json.dumps({'message': str(data[0]), 'code': 400})
+
+        except Exception as e:
+            return json.dumps({'message': str(e), 'code': 400}), 400
 
         finally:
             cursor.close()
