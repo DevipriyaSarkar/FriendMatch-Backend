@@ -262,12 +262,12 @@ def delete_my_friend(user_id):
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
-@app.route('/user/add/event/<int:hobby_id>')
-def add_my_event(hobby_id):
+@app.route('/user/add/event/<int:event_id>')
+def add_my_event(event_id):
     if session.get('user'):
         try:
             user_id = session.get('user')
-            return redirect(url_for('add_user_event', user_id=user_id, hobby_id=hobby_id))
+            return redirect(url_for('add_user_event', user_id=user_id, event_id=event_id))
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
@@ -276,12 +276,12 @@ def add_my_event(hobby_id):
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
-@app.route('/user/delete/event/<int:hobby_id>')
-def delete_my_event(hobby_id):
+@app.route('/user/delete/event/<int:event_id>')
+def delete_my_event(event_id):
     if session.get('user'):
         try:
             user_id = session.get('user')
-            return redirect(url_for('delete_user_event', user_id=user_id, hobby_id=hobby_id))
+            return redirect(url_for('delete_user_event', user_id=user_id, event_id=event_id))
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
@@ -812,7 +812,7 @@ def add_user_friend(user_id_1, user_id_2):
         try:
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.callproc('sp_addFriend', (user_id_1, user_id_2))
+            cursor.callproc('sp_addUserFriend', (user_id_1, user_id_2))
             data = cursor.fetchall()
 
             if len(data) is 0:
@@ -955,15 +955,15 @@ def get_all_events():
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
-@app.route('/user/<int:user_id>/add/event/<int:hobby_id>')
-def add_user_event(user_id, hobby_id):
+@app.route('/user/<int:user_id>/add/event/<int:event_id>')
+def add_user_event(user_id, event_id):
     if session.get('user'):
         cursor = None
         con = None
         try:
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.callproc('sp_addEvent', (user_id, hobby_id))
+            cursor.callproc('sp_addUserEvent', (user_id, event_id))
             data = cursor.fetchall()
 
             if len(data) is 0:
@@ -983,15 +983,15 @@ def add_user_event(user_id, hobby_id):
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
-@app.route('/user/<int:user_id>/delete/event/<int:hobby_id>')
-def delete_user_event(user_id, hobby_id):
+@app.route('/user/<int:user_id>/delete/event/<int:event_id>')
+def delete_user_event(user_id, event_id):
     if session.get('user'):
         cursor = None
         con = None
         try:
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.callproc('sp_deleteEvent', (user_id, hobby_id))
+            cursor.callproc('sp_deleteEvent', (user_id, event_id))
             data = cursor.fetchall()
 
             if len(data) is 0:
