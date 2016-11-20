@@ -19,8 +19,17 @@ DBMS Project by [Devipriya Sarkar](https://github.com/DevipriyaSarkar) and [Nami
 2. Install all the packages in ```requirements.txt```.  
 
  To install using pip, run ```pip install -r requirements.txt```.
+ 
+3. Update the variables in ```app.py```,
+ 
+ ```
+ app.config['MYSQL_DATABASE_USER'] = '<your-mysql-database-user>'
+ app.config['MYSQL_DATABASE_PASSWORD'] = '<your-mysql-database-password>'
+ app.config['MYSQL_DATABASE_DB'] = '<your-mysql-database-db>'
+ app.config['MYSQL_DATABASE_HOST'] = '<your-mysql-database-host>'
+ ```
 
-3. To run the application,
+4. To run the application,
  
  ```  
  $ export FLASK_APP=app.py
@@ -37,12 +46,12 @@ DBMS Project by [Devipriya Sarkar](https://github.com/DevipriyaSarkar) and [Nami
  * Running on http://0.0.0.0:5000/  
  ```  
 
-4. On Windows, run ```ipconfig``` on command prompt and note down the IPv4 Address ```<ip-address>```.
+5. On Windows, run ```ipconfig``` on command prompt and note down the IPv4 Address ```<ip-address>```.
 
  On Linux, run ```ifconfig``` instead.  
 
-5. Now head over to ```http://<ip-address>:5000``` to test if server is running. 
+6. Now head over to ```http://<ip-address>:5000``` to test if server is running. 
 
 
 
-Now you should be able to run the Android app of FriendMatch. Download from [here] (https://github.com/DevipriyaSarkar/FriendMatch-Frontend/releases) and if you want to run the app on the local server just set up, click on "Have a local server?" and enter ```<ip-address>:5000``` in the input field.
+Now you should be able to run the Android app of FriendMatch. Download from [here] (https://github.com/DevipriyaSarkar/FriendMatch-Frontend/releases) and if you want to run the app on the local server just set up, click on "Have a local server?" and enter ```<ip-address>:<endpoint>``` in the input field, eg. ```192.168.1.107:5000```  .
