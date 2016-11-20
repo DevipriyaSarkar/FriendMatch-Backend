@@ -10,14 +10,11 @@ mysql = MySQL()
 app.secret_key = os.urandom(24)
 
 # MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'devipriya'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'root'
-app.config['MYSQL_DATABASE_DB'] = 'friend_match'
-app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+app.config['MYSQL_DATABASE_USER'] = '<your-mysql-database-user>'
+app.config['MYSQL_DATABASE_PASSWORD'] = '<your-mysql-database-password>'
+app.config['MYSQL_DATABASE_DB'] = '<your-mysql-database-db>'
+app.config['MYSQL_DATABASE_HOST'] = '<your-mysql-database-host>'
 mysql.init_app(app)
-
-# Default setting
-pageLimit = 5
 
 
 @app.route('/')
