@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_getUserInfo`(
+CREATE PROCEDURE `sp_getUserInfo`(
     IN p_user_id BIGINT
 )
 BEGIN

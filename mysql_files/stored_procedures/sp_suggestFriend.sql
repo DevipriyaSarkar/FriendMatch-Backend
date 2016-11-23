@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_suggestFriend`(
+CREATE PROCEDURE `sp_suggestFriend`(
     IN p_user_id BIGINT
 )
 BEGIN

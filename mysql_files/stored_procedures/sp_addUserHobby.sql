@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_addUserHobby`(
+CREATE PROCEDURE `sp_addUserHobby`(
 	IN p_user_id BIGINT,
     IN p_hobby_id BIGINT
 )

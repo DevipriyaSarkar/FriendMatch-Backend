@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_getUserFriends`(
+CREATE PROCEDURE `sp_getUserFriends`(
     IN p_user_id BIGINT
 )
 BEGIN

@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_createUser`(
+CREATE PROCEDURE `sp_createUser`(
     IN new_name VARCHAR(45),
     IN new_email VARCHAR(45),
     IN new_password VARCHAR(100)

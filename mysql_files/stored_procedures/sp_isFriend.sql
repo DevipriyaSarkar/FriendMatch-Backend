@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_isFriend` (
+CREATE PROCEDURE `sp_isFriend` (
 	IN p_user_id1 BIGINT,
     IN p_user_id2 BIGINT
 )

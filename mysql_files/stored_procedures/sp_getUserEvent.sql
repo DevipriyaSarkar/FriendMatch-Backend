@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_getUserEvent`(
+CREATE PROCEDURE `sp_getUserEvent`(
     IN p_user_id BIGINT,
     IN p_date DATE
 )

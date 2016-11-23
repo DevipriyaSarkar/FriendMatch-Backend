@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_validateLogin`(
+CREATE PROCEDURE `sp_validateLogin`(
 	IN p_email VARCHAR(45)
 )
 BEGIN

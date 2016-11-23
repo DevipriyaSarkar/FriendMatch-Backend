@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_updateProfile`(
+CREATE PROCEDURE `sp_updateProfile`(
     IN user_id BIGINT,
     IN new_gender CHAR(1),
     IN new_age TINYINT,

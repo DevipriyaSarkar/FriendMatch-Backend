@@ -16,7 +16,7 @@ CREATE TABLE `user_details` (
     `age` TINYINT NULL,
     `gender` CHAR(1) NULL,
     `city` VARCHAR(20) NULL,
-    `location` VARCHAr(50) NULL,
+    `location` VARCHAR(50) NULL,
     `phone_number` VARCHAR(20) NULL,
     CONSTRAINT `pk_user_details_id` PRIMARY KEY (`id`),
     CONSTRAINT `fk_user_details_id` FOREIGN KEY(`id`)

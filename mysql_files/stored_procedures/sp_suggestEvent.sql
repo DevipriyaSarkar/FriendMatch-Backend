@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_suggestEvent`(
+CREATE PROCEDURE `sp_suggestEvent`(
     IN p_user_id BIGINT,
     IN p_date DATE
 )

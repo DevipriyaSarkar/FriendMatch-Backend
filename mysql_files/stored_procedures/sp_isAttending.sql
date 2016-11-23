@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_isAttending`(
+CREATE PROCEDURE `sp_isAttending`(
 	IN p_user_id BIGINT,
     IN p_event_id BIGINT
 )

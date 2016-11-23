@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_addUserEvent`(
+CREATE PROCEDURE `sp_addUserEvent`(
 	IN p_user_id BIGINT,
     IN p_event_id BIGINT
 )

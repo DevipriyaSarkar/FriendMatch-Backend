@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_deleteUserEvent`(
+CREATE PROCEDURE `sp_deleteUserEvent`(
 	IN p_user_id BIGINT,
     IN p_event_id BIGINT
 )
