@@ -470,7 +470,8 @@ def get_user_event(user_id):
 
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.callproc('sp_getUserEvent', (_req_user, now.strftime("%Y-%m-%d")))
+            cursor.callproc('sp_getUserEvent',
+                            (_req_user, now.strftime("%Y-%m-%d")))
             result = cursor.fetchall()
 
             event_dict = []
@@ -550,7 +551,8 @@ def get_related_hobbies_between(user_id_1, user_id_2):
             related_hobby_dict = []
 
             if result[0][0] == "FALSE":
-                cursor.callproc('sp_showRelatedHobby', (_user_id_1, _user_id_2))
+                cursor.callproc('sp_showRelatedHobby',
+                                (_user_id_1, _user_id_2))
                 result = cursor.fetchall()
 
                 for hobby in result:
@@ -658,7 +660,8 @@ def get_user_profile(user_id):
                 result1 = cursor.fetchall()
 
                 for hobby in result1:
-                    cursor.callproc('sp_isUserHobby', (_current_user, hobby[0]))
+                    cursor.callproc('sp_isUserHobby',
+                                    (_current_user, hobby[0]))
                     result2 = cursor.fetchall()
 
                     if result2[0][0] == "TRUE":
@@ -684,12 +687,14 @@ def get_user_profile(user_id):
             try:
 
                 now = datetime.datetime.now()
-                cursor.callproc('sp_getUserEvent', (_req_user, now.strftime("%Y-%m-%d")))
+                cursor.callproc('sp_getUserEvent',
+                                (_req_user, now.strftime("%Y-%m-%d")))
                 result1 = cursor.fetchall()
 
                 for event in result1:
 
-                    cursor.callproc('sp_isAttending', (_current_user, event[0]))
+                    cursor.callproc('sp_isAttending',
+                                    (_current_user, event[0]))
                     result2 = cursor.fetchall()
 
                     if result2[0][0] == "TRUE":
@@ -722,7 +727,8 @@ def get_user_profile(user_id):
                     _user_id_1 = session.get('user')
                     _user_id_2 = _req_user
 
-                    cursor.callproc('sp_showCommonHobby', (_user_id_1, _user_id_2))
+                    cursor.callproc('sp_showCommonHobby',
+                                    (_user_id_1, _user_id_2))
                     result = cursor.fetchall()
 
                     for hobby in result:
@@ -739,7 +745,8 @@ def get_user_profile(user_id):
                     result = cursor.fetchall()
 
                     if result[0][0] == "FALSE":
-                        cursor.callproc('sp_showRelatedHobby', (_user_id_1, _user_id_2))
+                        cursor.callproc('sp_showRelatedHobby',
+                                        (_user_id_1, _user_id_2))
                         result = cursor.fetchall()
 
                         for hobby in result:
@@ -771,7 +778,8 @@ def get_user_profile(user_id):
             ej = {'event': event_dict, 'code': code_e}
 
             if code_rh == 204:
-                rhj = {'related_hobby': "Friends. No need to show related hobbies.", 'code': code_rh}
+                rhj = {
+                    'related_hobby': "Friends. No need to show related hobbies.", 'code': code_rh}
 
             final_list.append(ij)
             final_list.append(fj)
@@ -806,7 +814,8 @@ def edit_user_profile(user_id):
 
                 con = mysql.connect()
                 cursor = con.cursor()
-                cursor.callproc('sp_updateProfile', (user_id, _gender, _age, _phone, _location, _city))
+                cursor.callproc('sp_updateProfile', (user_id,
+                                                     _gender, _age, _phone, _location, _city))
                 data = cursor.fetchall()
 
                 if len(data) is 0:
@@ -1047,7 +1056,8 @@ def suggest_user_events(user_id):
 
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.callproc('sp_suggestEvent', (_req_user, now.strftime("%Y-%m-%d")))
+            cursor.callproc('sp_suggestEvent',
+                            (_req_user, now.strftime("%Y-%m-%d")))
             result = cursor.fetchall()
 
             event_dict = []
