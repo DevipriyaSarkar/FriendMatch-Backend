@@ -1,4 +1,4 @@
-CREATE PROCEDURE `sp_suggestFriend`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_suggestFriend`(
     IN p_user_id BIGINT
 )
 BEGIN
@@ -16,6 +16,7 @@ BEGIN
     (SELECT DISTINCT USER.id, USER.user_name, USER.age, USER.gender
     FROM user_details USER, user_hobby HOBBY1
     WHERE USER.id = HOBBY1.id AND
+		USER.id <> p_user_id AND
 		HOBBY1.hobby_id IN
 			(
 				SELECT related_hobby_id FROM related_hobby

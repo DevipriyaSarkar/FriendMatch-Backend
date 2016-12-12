@@ -1,9 +1,10 @@
 import os
 import datetime
 
-from flask import Flask, json, request, redirect, session, url_for
+from flask import Flask, json, request, redirect, session, url_for, g
 from flaskext.mysql import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 
 app = Flask(__name__)
 mysql = MySQL()
@@ -71,7 +72,7 @@ def validate_login():
 
         con = mysql.connect()
         cursor = con.cursor()
-        cursor.callproc('sp_validateLogin', (_email, ))
+        cursor.callproc('sp_validateLogin', (_email,))
         data = cursor.fetchall()
 
         if len(data) > 0:
@@ -101,46 +102,47 @@ def logout():
         return json.dumps({'message': 'Unauthorised access.', 'code': 401})
 
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('user') is None:
+            return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 @app.route('/user/info')
+@login_required
 def get_my_info():
-    if session.get('user'):
-        try:
-            user_id = session.get('user')
-            return redirect(url_for('get_user_info', user_id=user_id))
+    try:
+        user_id = session.get('user')
+        return redirect(url_for('get_user_info', user_id=user_id))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/friends')
+@login_required
 def get_my_friends():
-    if session.get('user'):
-        try:
-            user_id = session.get('user')
-            return redirect(url_for('get_user_friends', user_id=user_id))
+    try:
+        user_id = session.get('user')
+        return redirect(url_for('get_user_friends', user_id=user_id))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/suggest/friends')
+@login_required
 def suggest_my_friends():
-    if session.get('user'):
-        try:
-            user_id = session.get('user')
-            return redirect(url_for('suggest_user_friends', user_id=user_id))
+    try:
+        user_id = session.get('user')
+        return redirect(url_for('suggest_user_friends', user_id=user_id))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/suggest/events')
@@ -158,177 +160,401 @@ def suggest_my_events():
 
 
 @app.route('/user/hobby')
+@login_required
 def get_my_hobby():
-    if session.get('user'):
-        try:
-            user_id = session.get('user')
-            return redirect(url_for('get_user_hobby', user_id=user_id))
+    try:
+        user_id = session.get('user')
+        return redirect(url_for('get_user_hobby', user_id=user_id))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/event')
+@login_required
 def get_my_event():
-    if session.get('user'):
-        try:
-            user_id = session.get('user')
-            return redirect(url_for('get_user_event', user_id=user_id))
+    try:
+        user_id = session.get('user')
+        return redirect(url_for('get_user_event', user_id=user_id))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/common/hobby/<int:user_id>')
+@login_required
 def get_my_common_hobbies_with(user_id):
-    if session.get('user'):
-        try:
-            user_id_1 = session.get('user')
-            user_id_2 = user_id
-            return redirect(url_for('get_common_hobbies_between', user_id_1=user_id_1, user_id_2=user_id_2))
+    try:
+        user_id_1 = session.get('user')
+        user_id_2 = user_id
+        return redirect(url_for('get_common_hobbies_between', user_id_1=user_id_1, user_id_2=user_id_2))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/related/hobby/<int:user_id>')
+@login_required
 def get_my_related_hobbies_with(user_id):
-    if session.get('user'):
-        try:
-            user_id_1 = session.get('user')
-            user_id_2 = user_id
-            return redirect(url_for('get_related_hobbies_between', user_id_1=user_id_1, user_id_2=user_id_2))
+    try:
+        user_id_1 = session.get('user')
+        user_id_2 = user_id
+        return redirect(url_for('get_related_hobbies_between', user_id_1=user_id_1, user_id_2=user_id_2))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/profile')
+@login_required
 def get_my_profile():
-    if session.get('user'):
-        try:
-            user_id = session.get('user')
-            return redirect(url_for('get_user_profile', user_id=user_id))
+    try:
+        user_id = session.get('user')
+        return redirect(url_for('get_user_profile', user_id=user_id))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/add/friend/<int:user_id>')
+@login_required
 def add_my_friend(user_id):
-    if session.get('user'):
-        try:
-            user_id_1 = session.get('user')
-            user_id_2 = user_id
-            return redirect(url_for('add_user_friend', user_id_1=user_id_1, user_id_2=user_id_2))
+    try:
+        user_id_1 = session.get('user')
+        user_id_2 = user_id
+        return redirect(url_for('add_user_friend', user_id_1=user_id_1, user_id_2=user_id_2))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/delete/friend/<int:user_id>')
+@login_required
 def delete_my_friend(user_id):
-    if session.get('user'):
-        try:
-            user_id_1 = session.get('user')
-            user_id_2 = user_id
-            return redirect(url_for('delete_user_friend', user_id_1=user_id_1, user_id_2=user_id_2))
+    try:
+        user_id_1 = session.get('user')
+        user_id_2 = user_id
+        return redirect(url_for('delete_user_friend', user_id_1=user_id_1, user_id_2=user_id_2))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/add/event/<int:event_id>')
+@login_required
 def add_my_event(event_id):
-    if session.get('user'):
-        try:
-            user_id = session.get('user')
-            return redirect(url_for('add_user_event', user_id=user_id, event_id=event_id))
+    try:
+        user_id = session.get('user')
+        return redirect(url_for('add_user_event', user_id=user_id, event_id=event_id))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/delete/event/<int:event_id>')
+@login_required
 def delete_my_event(event_id):
-    if session.get('user'):
-        try:
-            user_id = session.get('user')
-            return redirect(url_for('delete_user_event', user_id=user_id, event_id=event_id))
+    try:
+        user_id = session.get('user')
+        return redirect(url_for('delete_user_event', user_id=user_id, event_id=event_id))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/add/hobby/<int:hobby_id>')
+@login_required
 def add_my_hobby(hobby_id):
-    if session.get('user'):
-        try:
-            user_id = session.get('user')
-            return redirect(url_for('add_user_hobby', user_id=user_id, hobby_id=hobby_id))
+    try:
+        user_id = session.get('user')
+        return redirect(url_for('add_user_hobby', user_id=user_id, hobby_id=hobby_id))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/delete/hobby/<int:hobby_id>')
+@login_required
 def delete_my_hobby(hobby_id):
-    if session.get('user'):
-        try:
-            user_id = session.get('user')
-            return redirect(url_for('delete_user_hobby', user_id=user_id, hobby_id=hobby_id))
+    try:
+        user_id = session.get('user')
+        return redirect(url_for('delete_user_hobby', user_id=user_id, hobby_id=hobby_id))
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
 
 @app.route('/user/<int:user_id>/info')
+@login_required
 def get_user_info(user_id):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            _req_user = user_id
+    cursor = None
+    con = None
+    try:
+        _req_user = user_id
 
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_getUserInfo', (_req_user, ))
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_getUserInfo', (_req_user,))
+        result = cursor.fetchall()
+
+        info = {
+            'id': result[0][0],
+            'user_name': result[0][1],
+            'user_email': result[0][2],
+            'age': result[0][3],
+            'gender': result[0][4],
+            'city': result[0][5],
+            'location': result[0][6],
+            'phone_number': result[0][7]
+        }
+        return json.dumps({'message': {'info': info}, 'code': 200})
+
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id>/friends')
+@login_required
+def get_user_friends(user_id):
+    cursor = None
+    con = None
+    try:
+        _req_user = user_id
+
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_getUserFriends', (_req_user,))
+        result = cursor.fetchall()
+
+        friends_dict = []
+
+        for info in result:
+            info_dict = {
+                'friend_id': info[0],
+                'user_name': info[1],
+                'gender': info[2]
+            }
+            friends_dict.append(info_dict)
+
+        return json.dumps({'message': {'friends': friends_dict}, 'code': 200})
+
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id>/suggest/friends')
+@login_required
+def suggest_user_friends(user_id):
+    cursor = None
+    con = None
+    try:
+        _req_user = user_id
+
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_suggestFriend', (_req_user,))
+        result = cursor.fetchall()
+
+        suggestion_dict = []
+
+        for friend in result:
+            suggestion = {
+                'id': friend[0],
+                'user_name': friend[1],
+                'age': friend[2],
+                'gender': friend[3]
+            }
+            suggestion_dict.append(suggestion)
+
+        return json.dumps({'message': {'suggestions': suggestion_dict}, 'code': 200})
+
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id>/hobby')
+@login_required
+def get_user_hobby(user_id):
+    cursor = None
+    con = None
+    try:
+        _req_user = user_id
+
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_getUserHobby', (_req_user,))
+        result = cursor.fetchall()
+
+        hobby_dict = []
+
+        for hobby in result:
+            h_dict = {
+                'hobby_id': hobby[0],
+                'hobby_name': hobby[1]
+            }
+            hobby_dict.append(h_dict)
+
+        return json.dumps({'message': {'hobby': hobby_dict}, 'code': 200})
+
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id>/event')
+@login_required
+def get_user_event(user_id):
+    cursor = None
+    con = None
+    now = datetime.datetime.now()
+    try:
+        _req_user = user_id
+
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_getUserEvent',
+                        (_req_user, now.strftime("%Y-%m-%d")))
+        result = cursor.fetchall()
+
+        event_dict = []
+
+        for event in result:
+            e_dict = {
+                'event_id': event[0],
+                'event_name': event[1],
+                'event_city': event[2],
+                'event_date': event[3].strftime("%Y-%m-%d")
+            }
+            event_dict.append(e_dict)
+
+        return json.dumps({'message': {'event': event_dict}, 'code': 200})
+
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id_1>/common/hobby/<int:user_id_2>')
+@login_required
+def get_common_hobbies_between(user_id_1, user_id_2):
+    cursor = None
+    con = None
+    try:
+        _user_id_1 = user_id_1
+        _user_id_2 = user_id_2
+
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_showCommonHobby',
+                        (_user_id_1, _user_id_2))
+        result = cursor.fetchall()
+
+        common_hobby_dict = []
+
+        for hobby in result:
+            hobby_dict = {
+                'hobby_id': hobby[0],
+                'hobby_name': hobby[1]
+            }
+            common_hobby_dict.append(hobby_dict)
+
+        return json.dumps({'message': {'common_hobby': common_hobby_dict}, 'code': 200})
+
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id_1>/related/hobby/<int:user_id_2>')
+@login_required
+def get_related_hobbies_between(user_id_1, user_id_2):
+    cursor = None
+    con = None
+    try:
+        _user_id_1 = user_id_1
+        _user_id_2 = user_id_2
+
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_isFriend', (_user_id_1, _user_id_2))
+        result = cursor.fetchall()
+
+        related_hobby_dict = []
+
+        if result[0][0] == "FALSE":
+            cursor.callproc('sp_showRelatedHobby',
+                            (_user_id_1, _user_id_2))
             result = cursor.fetchall()
 
-            info = {
+            for hobby in result:
+                hobby_dict = {
+                    'related_hobby_id': hobby[0],
+                    'hobby_name': hobby[1]
+                }
+                related_hobby_dict.append(hobby_dict)
+
+            return json.dumps({'message': {'related_hobby': related_hobby_dict}, 'code': 200})
+
+        else:
+            return json.dumps({'message': {'related_hobby': "Friends. No need to show related hobbies."}, 'code': 204})
+
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id>/profile')
+@login_required
+def get_user_profile(user_id):
+    _req_user = user_id
+    _current_user = session.get('user')  # the one who called the route
+
+    user_info = None
+    friends_dict = []
+    hobby_dict = []
+    common_hobby_dict = []
+    related_hobby_dict = []
+    event_dict = []
+
+    code_i = code_f = code_h = code_ch = code_rh = code_e = 400
+
+    con = None
+    cursor = None
+
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+
+        # fetch user info
+        try:
+            cursor.callproc('sp_getUserInfo', (_req_user,))
+            result = cursor.fetchall()
+
+            user_info = {
                 'id': result[0][0],
                 'user_name': result[0][1],
                 'user_email': result[0][2],
@@ -338,578 +564,52 @@ def get_user_info(user_id):
                 'location': result[0][6],
                 'phone_number': result[0][7]
             }
-            return json.dumps({'message': {'info': info}, 'code': 200})
+
+            code_i = 200
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/user/<int:user_id>/friends')
-def get_user_friends(user_id):
-    if session.get('user'):
-        cursor = None
-        con = None
+        # fetch user friends
         try:
-            _req_user = user_id
 
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_getUserFriends', (_req_user, ))
-            result = cursor.fetchall()
-
-            friends_dict = []
-
-            for info in result:
-                info_dict = {
-                    'friend_id': info[0],
-                    'user_name': info[1],
-                    'gender': info[2]
-                }
-                friends_dict.append(info_dict)
-
-            return json.dumps({'message': {'friends': friends_dict}, 'code': 200})
-
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/user/<int:user_id>/suggest/friends')
-def suggest_user_friends(user_id):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            _req_user = user_id
-
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_suggestFriend', (_req_user, ))
-            result = cursor.fetchall()
-
-            suggestion_dict = []
-
-            for friend in result:
-                suggestion = {
-                    'id': friend[0],
-                    'user_name': friend[1],
-                    'age': friend[2],
-                    'gender': friend[3]
-                }
-                suggestion_dict.append(suggestion)
-
-            return json.dumps({'message': {'suggestions': suggestion_dict}, 'code': 200})
-
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/user/<int:user_id>/hobby')
-def get_user_hobby(user_id):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            _req_user = user_id
-
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_getUserHobby', (_req_user, ))
-            result = cursor.fetchall()
-
-            hobby_dict = []
-
-            for hobby in result:
-                h_dict = {
-                    'hobby_id': hobby[0],
-                    'hobby_name': hobby[1]
-                }
-                hobby_dict.append(h_dict)
-
-            return json.dumps({'message': {'hobby': hobby_dict}, 'code': 200})
-
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/user/<int:user_id>/event')
-def get_user_event(user_id):
-    if session.get('user'):
-        cursor = None
-        con = None
-        now = datetime.datetime.now()
-        try:
-            _req_user = user_id
-
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_getUserEvent',
-                            (_req_user, now.strftime("%Y-%m-%d")))
-            result = cursor.fetchall()
-
-            event_dict = []
-
-            for event in result:
-                e_dict = {
-                    'event_id': event[0],
-                    'event_name': event[1],
-                    'event_city': event[2],
-                    'event_date': event[3].strftime("%Y-%m-%d")
-                }
-                event_dict.append(e_dict)
-
-            return json.dumps({'message': {'event': event_dict}, 'code': 200})
-
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/user/<int:user_id_1>/common/hobby/<int:user_id_2>')
-def get_common_hobbies_between(user_id_1, user_id_2):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            _user_id_1 = user_id_1
-            _user_id_2 = user_id_2
-
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_showCommonHobby', (_user_id_1, _user_id_2))
-            result = cursor.fetchall()
-
-            common_hobby_dict = []
-
-            for hobby in result:
-                hobby_dict = {
-                    'hobby_id': hobby[0],
-                    'hobby_name': hobby[1]
-                }
-                common_hobby_dict.append(hobby_dict)
-
-            return json.dumps({'message': {'common_hobby': common_hobby_dict}, 'code': 200})
-
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/user/<int:user_id_1>/related/hobby/<int:user_id_2>')
-def get_related_hobbies_between(user_id_1, user_id_2):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            _user_id_1 = user_id_1
-            _user_id_2 = user_id_2
-
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_isFriend', (_user_id_1, _user_id_2))
-            result = cursor.fetchall()
-
-            related_hobby_dict = []
-
-            if result[0][0] == "FALSE":
-                cursor.callproc('sp_showRelatedHobby',
-                                (_user_id_1, _user_id_2))
-                result = cursor.fetchall()
-
-                for hobby in result:
-                    hobby_dict = {
-                        'related_hobby_id': hobby[0],
-                        'hobby_name': hobby[1]
-                    }
-                    related_hobby_dict.append(hobby_dict)
-
-                return json.dumps({'message': {'related_hobby': related_hobby_dict}, 'code': 200})
-
-            else:
-                return json.dumps({'message': {'related_hobby': "Friends. No need to show related hobbies."}, 'code': 204})
-
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/user/<int:user_id>/profile')
-def get_user_profile(user_id):
-    if session.get('user'):
-
-        _req_user = user_id
-        _current_user = session.get('user')     # the one who called the route
-
-        user_info = None
-        friends_dict = []
-        hobby_dict = []
-        common_hobby_dict = []
-        related_hobby_dict = []
-        event_dict = []
-
-        code_i = code_f = code_h = code_ch = code_rh = code_e = 400
-
-        con = None
-        cursor = None
-
-        try:
-            con = mysql.connect()
-            cursor = con.cursor()
-
-            # fetch user info
-            try:
-                cursor.callproc('sp_getUserInfo', (_req_user,))
-                result = cursor.fetchall()
-
-                user_info = {
-                    'id': result[0][0],
-                    'user_name': result[0][1],
-                    'user_email': result[0][2],
-                    'age': result[0][3],
-                    'gender': result[0][4],
-                    'city': result[0][5],
-                    'location': result[0][6],
-                    'phone_number': result[0][7]
-                }
-
-                code_i = 200
-
-            except Exception as e:
-                return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-            # fetch user friends
-            try:
-
-                cursor.callproc('sp_getUserFriends', (_req_user, ))
-                result1 = cursor.fetchall()
-
-                for info in result1:
-                    cursor.callproc('sp_isFriend', (_current_user, info[0]))
-                    result2 = cursor.fetchall()
-
-                    if result2[0][0] == "TRUE":
-                        info_dict = {
-                            'friend_id': info[0],
-                            'user_name': info[1],
-                            'gender': info[2],
-                            'is_your_friend': True
-                        }
-                    else:
-                        info_dict = {
-                            'friend_id': info[0],
-                            'user_name': info[1],
-                            'gender': info[2],
-                            'is_your_friend': False
-                        }
-                    friends_dict.append(info_dict)
-
-                code_f = 200
-
-            except Exception as e:
-                return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-            # fetch user hobby
-            try:
-
-                cursor.callproc('sp_getUserHobby', (_req_user,))
-                result1 = cursor.fetchall()
-
-                for hobby in result1:
-                    cursor.callproc('sp_isUserHobby',
-                                    (_current_user, hobby[0]))
-                    result2 = cursor.fetchall()
-
-                    if result2[0][0] == "TRUE":
-                        h_dict = {
-                            'hobby_id': hobby[0],
-                            'hobby_name': hobby[1],
-                            'is_user_hobby': True
-                        }
-                    else:
-                        h_dict = {
-                            'hobby_id': hobby[0],
-                            'hobby_name': hobby[1],
-                            'is_user_hobby': False
-                        }
-                    hobby_dict.append(h_dict)
-
-                code_h = 200
-
-            except Exception as e:
-                return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-            # fetch user events
-            try:
-
-                now = datetime.datetime.now()
-                cursor.callproc('sp_getUserEvent',
-                                (_req_user, now.strftime("%Y-%m-%d")))
-                result1 = cursor.fetchall()
-
-                for event in result1:
-
-                    cursor.callproc('sp_isAttending',
-                                    (_current_user, event[0]))
-                    result2 = cursor.fetchall()
-
-                    if result2[0][0] == "TRUE":
-                        e_dict = {
-                            'event_id': event[0],
-                            'event_name': event[1],
-                            'event_city': event[2],
-                            'event_date': event[3].strftime("%Y-%m-%d"),
-                            'is_user_attending': True
-                        }
-                    else:
-                        e_dict = {
-                            'event_id': event[0],
-                            'event_name': event[1],
-                            'event_city': event[2],
-                            'event_date': event[3].strftime("%Y-%m-%d"),
-                            'is_user_attending': False
-                        }
-                    event_dict.append(e_dict)
-
-                code_e = 200
-
-            except Exception as e:
-                return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-            # show common and related hobby if not checking own profile
-            if session.get('user') != _req_user:
-                try:
-
-                    _user_id_1 = session.get('user')
-                    _user_id_2 = _req_user
-
-                    cursor.callproc('sp_showCommonHobby',
-                                    (_user_id_1, _user_id_2))
-                    result = cursor.fetchall()
-
-                    for hobby in result:
-                        h_dict = {
-                            'hobby_id': hobby[0],
-                            'hobby_name': hobby[1],
-                            'is_user_hobby': True   # that is why common hobby
-                        }
-                        common_hobby_dict.append(h_dict)
-
-                    code_ch = 200
-
-                    cursor.callproc('sp_isFriend', (_user_id_1, _user_id_2))
-                    result = cursor.fetchall()
-
-                    if result[0][0] == "FALSE":
-                        cursor.callproc('sp_showRelatedHobby',
-                                        (_user_id_1, _user_id_2))
-                        result = cursor.fetchall()
-
-                        for hobby in result:
-                            h_dict = {
-                                'related_hobby_id': hobby[0],
-                                'hobby_name': hobby[1],
-                                'is_user_hobby': False  # not yet added to hobby list that is why not in common hobby
-                            }
-                            related_hobby_dict.append(h_dict)
-
-                        code_rh = 200
-
-                    else:
-                        code_rh = 204
-
-                except Exception as e:
-                    return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
-
-            else:
-                code_ch = 403
-                code_rh = 403
-
-            final_list = []
-            ij = {'info': user_info, 'code': code_i}
-            fj = {'friends': friends_dict, 'code': code_f}
-            hj = {'hobby': hobby_dict, 'code': code_h}
-            chj = {'common_hobby': common_hobby_dict, 'code': code_ch}
-            rhj = {'related_hobby': related_hobby_dict, 'code': code_rh}
-            ej = {'event': event_dict, 'code': code_e}
-
-            if code_rh == 204:
-                rhj = {
-                    'related_hobby': "Friends. No need to show related hobbies.", 'code': code_rh}
-
-            final_list.append(ij)
-            final_list.append(fj)
-            final_list.append(hj)
-            final_list.append(chj)
-            final_list.append(rhj)
-            final_list.append(ej)
-
-            return json.dumps({'message': final_list, 'code': 200})
-
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/user/<int:user_id>/edit/profile', methods=['POST'])
-def edit_user_profile(user_id):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            _gender = request.args['gender']
-            _age = request.args['age']
-            _phone = request.args['phone']
-            _location = request.args['location']
-            _city = request.args['city']
-
-            if _gender and _age and _phone and _location and _city:
-
-                con = mysql.connect()
-                cursor = con.cursor()
-                cursor.callproc('sp_updateProfile', (user_id,
-                                                     _gender, _age, _phone, _location, _city))
-                data = cursor.fetchall()
-
-                if len(data) is 0:
-                    con.commit()
-                    return json.dumps({'message': 'User updated successfully.', 'code': 200})
-                else:
-                    return json.dumps({'message': str(data[0]), 'code': 400})
-
-            else:
-                return json.dumps({'message': 'Invalid input', 'code': 400})
-
-        except Exception as e:
-            return json.dumps({'message': str(e), 'code': 400}), 400
-
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/user/<int:user_id_1>/add/friend/<int:user_id_2>')
-def add_user_friend(user_id_1, user_id_2):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_addUserFriend', (user_id_1, user_id_2))
-            data = cursor.fetchall()
-
-            if len(data) is 0:
-                con.commit()
-                return json.dumps({'message': 'Friend added successfully.', 'code': 200})
-            else:
-                return json.dumps({'message': str(data[0]), 'code': 400})
-
-        except Exception as e:
-            return json.dumps({'message': str(e), 'code': 400}), 400
-
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/user/<int:user_id_1>/delete/friend/<int:user_id_2>')
-def delete_user_friend(user_id_1, user_id_2):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_deleteUserFriend', (user_id_1, user_id_2))
-            data = cursor.fetchall()
-
-            if len(data) is 0:
-                con.commit()
-                return json.dumps({'message': 'Friend deleted successfully.', 'code': 200})
-            else:
-                return json.dumps({'message': str(data[0]), 'code': 400})
-
-        except Exception as e:
-            return json.dumps({'message': str(e), 'code': 400}), 400
-
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/all/hobby')
-def get_all_hobbies():
-    if session.get('user'):
-        con = None
-        cursor = None
-        try:
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_getAllHobbies')
+            cursor.callproc('sp_getUserFriends', (_req_user,))
             result1 = cursor.fetchall()
 
-            hobby_dict = []
+            for info in result1:
+                cursor.callproc('sp_isFriend', (_current_user, info[0]))
+                result2 = cursor.fetchall()
+
+                if result2[0][0] == "TRUE":
+                    info_dict = {
+                        'friend_id': info[0],
+                        'user_name': info[1],
+                        'gender': info[2],
+                        'is_your_friend': True
+                    }
+                else:
+                    info_dict = {
+                        'friend_id': info[0],
+                        'user_name': info[1],
+                        'gender': info[2],
+                        'is_your_friend': False
+                    }
+                friends_dict.append(info_dict)
+
+            code_f = 200
+
+        except Exception as e:
+            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+        # fetch user hobby
+        try:
+
+            cursor.callproc('sp_getUserHobby', (_req_user,))
+            result1 = cursor.fetchall()
 
             for hobby in result1:
-                user_id = session.get('user')
-                cursor.callproc('sp_isUserHobby', (user_id, hobby[0]))
+                cursor.callproc('sp_isUserHobby',
+                                (_current_user, hobby[0]))
                 result2 = cursor.fetchall()
 
                 if result2[0][0] == "TRUE":
@@ -924,38 +624,25 @@ def get_all_hobbies():
                         'hobby_name': hobby[1],
                         'is_user_hobby': False
                     }
-
                 hobby_dict.append(h_dict)
 
-            return json.dumps({'message': {'hobby': hobby_dict}, 'code': 200})
+            code_h = 200
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
-        finally:
-            cursor.close()
-            con.close()
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
-
-
-@app.route('/all/event')
-def get_all_events():
-    if session.get('user'):
-        con = None
-        cursor = None
-        now = datetime.datetime.now()
+        # fetch user events
         try:
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_getAllEvents', (now.strftime("%Y-%m-%d"), ))
+
+            now = datetime.datetime.now()
+            cursor.callproc('sp_getUserEvent',
+                            (_req_user, now.strftime("%Y-%m-%d")))
             result1 = cursor.fetchall()
 
-            event_dict = []
-
             for event in result1:
-                user_id = session.get('user')
-                cursor.callproc('sp_isAttending', (user_id, event[0]))
+
+                cursor.callproc('sp_isAttending',
+                                (_current_user, event[0]))
                 result2 = cursor.fetchall()
 
                 if result2[0][0] == "TRUE":
@@ -974,170 +661,404 @@ def get_all_events():
                         'event_date': event[3].strftime("%Y-%m-%d"),
                         'is_user_attending': False
                     }
-
                 event_dict.append(e_dict)
 
-            return json.dumps({'message': {'event': event_dict}, 'code': 200})
+            code_e = 200
 
         except Exception as e:
             return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
-        finally:
-            cursor.close()
-            con.close()
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+        # show common and related hobby if not checking own profile
+        if session.get('user') != _req_user:
+            try:
+
+                _user_id_1 = session.get('user')
+                _user_id_2 = _req_user
+
+                cursor.callproc('sp_showCommonHobby',
+                                (_user_id_1, _user_id_2))
+                result = cursor.fetchall()
+
+                for hobby in result:
+                    h_dict = {
+                        'hobby_id': hobby[0],
+                        'hobby_name': hobby[1],
+                        'is_user_hobby': True  # that is why common hobby
+                    }
+                    common_hobby_dict.append(h_dict)
+
+                code_ch = 200
+
+                cursor.callproc('sp_isFriend', (_user_id_1, _user_id_2))
+                result = cursor.fetchall()
+
+                if result[0][0] == "FALSE":
+                    cursor.callproc('sp_showRelatedHobby',
+                                    (_user_id_1, _user_id_2))
+                    result = cursor.fetchall()
+
+                    for hobby in result:
+                        h_dict = {
+                            'related_hobby_id': hobby[0],
+                            'hobby_name': hobby[1],
+                            'is_user_hobby': False  # not yet added to hobby list that is why not in common hobby
+                        }
+                        related_hobby_dict.append(h_dict)
+
+                    code_rh = 200
+
+                else:
+                    code_rh = 204
+
+            except Exception as e:
+                return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+        else:
+            code_ch = 403
+            code_rh = 403
+
+        final_list = []
+        ij = {'info': user_info, 'code': code_i}
+        fj = {'friends': friends_dict, 'code': code_f}
+        hj = {'hobby': hobby_dict, 'code': code_h}
+        chj = {'common_hobby': common_hobby_dict, 'code': code_ch}
+        rhj = {'related_hobby': related_hobby_dict, 'code': code_rh}
+        ej = {'event': event_dict, 'code': code_e}
+
+        if code_rh == 204:
+            rhj = {'related_hobby': "Friends. "
+                                    "No need to show related hobbies.",
+                   'code': code_rh}
+
+        final_list.append(ij)
+        final_list.append(fj)
+        final_list.append(hj)
+        final_list.append(chj)
+        final_list.append(rhj)
+        final_list.append(ej)
+
+        return json.dumps({'message': final_list, 'code': 200})
+
+    finally:
+        cursor.close()
+        con.close()
 
 
-@app.route('/user/<int:user_id>/add/event/<int:event_id>')
-def add_user_event(user_id, event_id):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
+@app.route('/user/<int:user_id>/edit/profile', methods=['POST'])
+@login_required
+def edit_user_profile(user_id):
+    cursor = None
+    con = None
+    try:
+        _gender = request.args['gender']
+        _age = request.args['age']
+        _phone = request.args['phone']
+        _location = request.args['location']
+        _city = request.args['city']
+
+        if _gender and _age and _phone and _location and _city:
+
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.callproc('sp_addUserEvent', (user_id, event_id))
+            cursor.callproc('sp_updateProfile',
+                            (user_id, _gender, _age,
+                             _phone, _location, _city))
             data = cursor.fetchall()
 
             if len(data) is 0:
                 con.commit()
-                return json.dumps({'message': 'Event added successfully.', 'code': 200})
+                return json.dumps({'message': 'User updated successfully.', 'code': 200})
             else:
                 return json.dumps({'message': str(data[0]), 'code': 400})
 
-        except Exception as e:
-            return json.dumps({'message': str(e), 'code': 400}), 400
+        else:
+            return json.dumps({'message': 'Invalid input', 'code': 400})
 
-        finally:
-            cursor.close()
-            con.close()
+    except Exception as e:
+        return json.dumps({'message': str(e), 'code': 400}), 400
 
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    finally:
+        cursor.close()
+        con.close()
 
 
-@app.route('/user/<int:user_id>/delete/event/<int:event_id>')
-def delete_user_event(user_id, event_id):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_deleteUserEvent', (user_id, event_id))
-            data = cursor.fetchall()
+@app.route('/user/<int:user_id_1>/add/friend/<int:user_id_2>')
+@login_required
+def add_user_friend(user_id_1, user_id_2):
+    cursor = None
+    con = None
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_addUserFriend', (user_id_1, user_id_2))
+        data = cursor.fetchall()
 
-            if len(data) is 0:
-                con.commit()
-                return json.dumps({'message': 'Event deleted successfully.', 'code': 200})
+        if len(data) is 0:
+            con.commit()
+            return json.dumps({'message': 'Friend added successfully.', 'code': 200})
+        else:
+            return json.dumps({'message': str(data[0]), 'code': 400})
+
+    except Exception as e:
+        return json.dumps({'message': str(e), 'code': 400}), 400
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id_1>/delete/friend/<int:user_id_2>')
+@login_required
+def delete_user_friend(user_id_1, user_id_2):
+    cursor = None
+    con = None
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_deleteUserFriend', (user_id_1, user_id_2))
+        data = cursor.fetchall()
+
+        if len(data) is 0:
+            con.commit()
+            return json.dumps({'message': 'Friend deleted successfully.', 'code': 200})
+        else:
+            return json.dumps({'message': str(data[0]), 'code': 400})
+
+    except Exception as e:
+        return json.dumps({'message': str(e), 'code': 400}), 400
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/all/hobby')
+@login_required
+def get_all_hobbies():
+    con = None
+    cursor = None
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_getAllHobbies')
+        result1 = cursor.fetchall()
+
+        hobby_dict = []
+
+        for hobby in result1:
+            user_id = session.get('user')
+            cursor.callproc('sp_isUserHobby',
+                            (user_id, hobby[0]))
+            result2 = cursor.fetchall()
+
+            if result2[0][0] == "TRUE":
+                h_dict = {
+                    'hobby_id': hobby[0],
+                    'hobby_name': hobby[1],
+                    'is_user_hobby': True
+                }
             else:
-                return json.dumps({'message': str(data[0]), 'code': 400})
+                h_dict = {
+                    'hobby_id': hobby[0],
+                    'hobby_name': hobby[1],
+                    'is_user_hobby': False
+                }
 
-        except Exception as e:
-            return json.dumps({'message': str(e), 'code': 400}), 400
+            hobby_dict.append(h_dict)
 
-        finally:
-            cursor.close()
-            con.close()
+        return json.dumps({'message': {'hobby': hobby_dict}, 'code': 200})
 
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
 
 
-@app.route('/user/<int:user_id>/suggest/events')
-def suggest_user_events(user_id):
-    if session.get('user'):
-        cursor = None
-        con = None
-        now = datetime.datetime.now()
-        try:
-            _req_user = user_id
+@app.route('/all/event')
+@login_required
+def get_all_events():
+    con = None
+    cursor = None
+    now = datetime.datetime.now()
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_getAllEvents', (now.strftime("%Y-%m-%d"),))
+        result1 = cursor.fetchall()
 
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_suggestEvent',
-                            (_req_user, now.strftime("%Y-%m-%d")))
-            result = cursor.fetchall()
+        event_dict = []
 
-            event_dict = []
+        for event in result1:
+            user_id = session.get('user')
+            cursor.callproc('sp_isAttending',
+                            (user_id, event[0]))
+            result2 = cursor.fetchall()
 
-            for event in result:
+            if result2[0][0] == "TRUE":
                 e_dict = {
                     'event_id': event[0],
                     'event_name': event[1],
                     'event_city': event[2],
-                    'event_date': event[3].strftime("%Y-%m-%d")
+                    'event_date': event[3].strftime("%Y-%m-%d"),
+                    'is_user_attending': True
                 }
-                event_dict.append(e_dict)
+            else:
+                e_dict = {
+                    'event_id': event[0],
+                    'event_name': event[1],
+                    'event_city': event[2],
+                    'event_date': event[3].strftime("%Y-%m-%d"),
+                    'is_user_attending': False
+                }
 
-            return json.dumps({'message': {'suggested_event': event_dict}, 'code': 200})
+            event_dict.append(e_dict)
 
-        except Exception as e:
-            return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+        return json.dumps({'message': {'event': event_dict}, 'code': 200})
 
-        finally:
-            cursor.close()
-            con.close()
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
 
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id>/add/event/<int:event_id>')
+@login_required
+def add_user_event(user_id, event_id):
+    cursor = None
+    con = None
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_addUserEvent', (user_id, event_id))
+        data = cursor.fetchall()
+
+        if len(data) is 0:
+            con.commit()
+            return json.dumps({'message': 'Event added successfully.', 'code': 200})
+        else:
+            return json.dumps({'message': str(data[0]), 'code': 400})
+
+    except Exception as e:
+        return json.dumps({'message': str(e), 'code': 400}), 400
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id>/delete/event/<int:event_id>')
+@login_required
+def delete_user_event(user_id, event_id):
+    cursor = None
+    con = None
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_deleteUserEvent', (user_id, event_id))
+        data = cursor.fetchall()
+
+        if len(data) is 0:
+            con.commit()
+            return json.dumps({'message': 'Event deleted successfully.', 'code': 200})
+        else:
+            return json.dumps({'message': str(data[0]), 'code': 400})
+
+    except Exception as e:
+        return json.dumps({'message': str(e), 'code': 400}), 400
+
+    finally:
+        cursor.close()
+        con.close()
+
+
+@app.route('/user/<int:user_id>/suggest/events')
+@login_required
+def suggest_user_events(user_id):
+    cursor = None
+    con = None
+    now = datetime.datetime.now()
+    try:
+        _req_user = user_id
+
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_suggestEvent',
+                        (_req_user, now.strftime("%Y-%m-%d")))
+        result = cursor.fetchall()
+
+        event_dict = []
+
+        for event in result:
+            e_dict = {
+                'event_id': event[0],
+                'event_name': event[1],
+                'event_city': event[2],
+                'event_date': event[3].strftime("%Y-%m-%d")
+            }
+            event_dict.append(e_dict)
+
+        return json.dumps({'message': {'suggested_event': event_dict}, 'code': 200})
+
+    except Exception as e:
+        return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
+
+    finally:
+        cursor.close()
+        con.close()
 
 
 @app.route('/user/<int:user_id>/add/hobby/<int:hobby_id>')
+@login_required
 def add_user_hobby(user_id, hobby_id):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_addUserHobby', (user_id, hobby_id))
-            data = cursor.fetchall()
+    cursor = None
+    con = None
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_addUserHobby', (user_id, hobby_id))
+        data = cursor.fetchall()
 
-            if len(data) is 0:
-                con.commit()
-                return json.dumps({'message': 'Hobby added successfully.', 'code': 200})
-            else:
-                return json.dumps({'message': str(data[0]), 'code': 400})
+        if len(data) is 0:
+            con.commit()
+            return json.dumps({'message': 'Hobby added successfully.', 'code': 200})
+        else:
+            return json.dumps({'message': str(data[0]), 'code': 400})
 
-        except Exception as e:
-            return json.dumps({'message': str(e), 'code': 400}), 400
+    except Exception as e:
+        return json.dumps({'message': str(e), 'code': 400}), 400
 
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    finally:
+        cursor.close()
+        con.close()
 
 
 @app.route('/user/<int:user_id>/delete/hobby/<int:hobby_id>')
+@login_required
 def delete_user_hobby(user_id, hobby_id):
-    if session.get('user'):
-        cursor = None
-        con = None
-        try:
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.callproc('sp_deleteUserHobby', (user_id, hobby_id))
-            data = cursor.fetchall()
+    cursor = None
+    con = None
+    try:
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.callproc('sp_deleteUserHobby', (user_id, hobby_id))
+        data = cursor.fetchall()
 
-            if len(data) is 0:
-                con.commit()
-                return json.dumps({'message': 'Hobby deleted successfully.', 'code': 200})
-            else:
-                return json.dumps({'message': str(data[0]), 'code': 400})
+        if len(data) is 0:
+            con.commit()
+            return json.dumps({'message': 'Hobby deleted successfully.', 'code': 200})
+        else:
+            return json.dumps({'message': str(data[0]), 'code': 400})
 
-        except Exception as e:
-            return json.dumps({'message': str(e), 'code': 400}), 400
+    except Exception as e:
+        return json.dumps({'message': str(e), 'code': 400}), 400
 
-        finally:
-            cursor.close()
-            con.close()
-
-    else:
-        return json.dumps({'message': 'Unauthorised access.', 'code': 401})
+    finally:
+        cursor.close()
+        con.close()
 
 
 if __name__ == '__main__':
