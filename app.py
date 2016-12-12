@@ -11,10 +11,10 @@ mysql = MySQL()
 app.secret_key = os.urandom(24)
 
 # MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'devipriya'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'root'
-app.config['MYSQL_DATABASE_DB'] = 'friend_match'
-app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+app.config['MYSQL_DATABASE_USER'] = '<your-mysql-database-user>'
+app.config['MYSQL_DATABASE_PASSWORD'] = '<your-mysql-database-password>'
+app.config['MYSQL_DATABASE_DB'] = '<your-mysql-database-db>'
+app.config['MYSQL_DATABASE_HOST'] = '<your-mysql-database-host>'
 mysql.init_app(app)
 
 
@@ -612,17 +612,12 @@ def get_common_hobbies_between(user_id_1, user_id_2):
                     'is_user_hobby': True
                 }
                 common_hobby_dict.append(hobby_dict)
+            return json.dumps({'message': {'common_hobby': common_hobby_dict}, 'code': 200})
 
         else:
-            for hobby in result:
-                hobby_dict = {
-                    'hobby_id': hobby[0],
-                    'hobby_name': hobby[1],
-                    'is_user_hobby': False
-                }
-                common_hobby_dict.append(hobby_dict)
-
-        return json.dumps({'message': {'common_hobby': common_hobby_dict}, 'code': 200})
+            return json.dumps({'message': {
+                'common_hobby': "Self. No need to show common hobbies."},
+                'code': 204})
 
     except Exception as e:
         return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
@@ -648,7 +643,7 @@ def get_related_hobbies_between(user_id_1, user_id_2):
 
         related_hobby_dict = []
 
-        if result1[0][0] == "FALSE":
+        if result1[0][0] == "FALSE" and _user_id_1 != _user_id_2:
             cursor.callproc('sp_showRelatedHobby',
                             (_user_id_1, _user_id_2))
             result2 = cursor.fetchall()
@@ -664,7 +659,9 @@ def get_related_hobbies_between(user_id_1, user_id_2):
             return json.dumps({'message': {'related_hobby': related_hobby_dict}, 'code': 200})
 
         else:
-            return json.dumps({'message': {'related_hobby': "Friends. No need to show related hobbies."}, 'code': 204})
+            return json.dumps({'message': {
+                'related_hobby': "Friends/Self. No need to show related hobbies."},
+                'code': 204})
 
     except Exception as e:
         return json.dumps({'message': 'Error: %s' % (str(e)), 'code': 400})
@@ -902,9 +899,6 @@ def suggest_user_friends(user_id):
 def get_user_profile(user_id):
     _req_user = user_id
 
-    common_hobby_dict = []
-    related_hobby_dict = []
-
     # fetch user info
     user_info = json.loads(get_user_info(_req_user))
 
@@ -919,7 +913,6 @@ def get_user_profile(user_id):
 
     # show common and related hobby if not checking own profile
     if session.get('user') != _req_user:
-
         _user_id_1 = session.get('user')
         _user_id_2 = _req_user
 
@@ -928,6 +921,15 @@ def get_user_profile(user_id):
 
         related_hobby_dict = json.loads(get_related_hobbies_between(
             _user_id_1, _user_id_2))
+
+    else:
+        common_hobby_dict = {'message': {
+                'common_hobby': "Self. No need to show common hobbies."},
+                'code': 204}
+
+        related_hobby_dict = {'message': {
+                'related_hobby': "Self. No need to show related hobbies."},
+                'code': 204}
 
     final_list = []
     ij = {'info': user_info}
