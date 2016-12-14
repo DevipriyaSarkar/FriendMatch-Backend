@@ -55,3 +55,6 @@ DBMS Project by [Devipriya Sarkar](https://github.com/DevipriyaSarkar) and [Nami
 
 
 Now you should be able to run the Android app of FriendMatch. Download from [here] (https://github.com/DevipriyaSarkar/FriendMatch-Frontend/releases) and if you want to run the app on the local server just set up, click on "Have a local server?" and enter ```<ip-address>:<endpoint>``` in the input field, eg. ```192.168.1.107:5000```  .
+
+## License
+The content of this repository is licensed under [MIT LICENSE](LICENSE.MD).
