@@ -901,15 +901,23 @@ def get_user_profile(user_id):
 
     # fetch user info
     user_info = json.loads(get_user_info(_req_user))
+    info = user_info['message']['info']
+    code_i = user_info['code']
 
     # fetch user friends
     friends_dict = json.loads(get_user_friends(_req_user))
+    friends = friends_dict['message']['friends']
+    code_f = friends_dict['code']
 
     # fetch user hobby
     hobby_dict = json.loads(get_user_hobby(_req_user))
+    hobby = hobby_dict['message']['hobby']
+    code_h = hobby_dict['code']
 
     # fetch user events
     event_dict = json.loads(get_user_event(_req_user))
+    event = event_dict['message']['event']
+    code_e = event_dict['code']
 
     # show common and related hobby if not checking own profile
     if session.get('user') != _req_user:
@@ -918,26 +926,28 @@ def get_user_profile(user_id):
 
         common_hobby_dict = json.loads(get_common_hobbies_between(
             _user_id_1, _user_id_2))
+        common_hobby = common_hobby_dict['message']['common_hobby']
+        code_ch = common_hobby_dict['code']
 
         related_hobby_dict = json.loads(get_related_hobbies_between(
             _user_id_1, _user_id_2))
+        related_hobby = related_hobby_dict['message']['related_hobby']
+        code_rh = related_hobby_dict['code']
 
     else:
-        common_hobby_dict = {'message': {
-                'common_hobby': "Self. No need to show common hobbies."},
-                'code': 204}
+        common_hobby = "Self. No need to show common hobbies."
+        code_ch = 204
 
-        related_hobby_dict = {'message': {
-                'related_hobby': "Self. No need to show related hobbies."},
-                'code': 204}
+        related_hobby = "Self. No need to show related hobbies."
+        code_rh = 204
 
     final_list = []
-    ij = {'info': user_info}
-    fj = {'friends': friends_dict}
-    hj = {'hobby': hobby_dict}
-    chj = {'common_hobby': common_hobby_dict}
-    rhj = {'related_hobby': related_hobby_dict}
-    ej = {'event': event_dict}
+    ij = {'info': info, 'code': code_i}
+    fj = {'friends': friends, 'code': code_f}
+    hj = {'hobby': hobby, 'code': code_h}
+    chj = {'common_hobby': common_hobby, 'code': code_ch}
+    rhj = {'related_hobby': related_hobby, 'code': code_rh}
+    ej = {'event': event, 'code': code_e}
 
     final_list.append(ij)
     final_list.append(fj)
