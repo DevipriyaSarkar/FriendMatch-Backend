@@ -5,16 +5,17 @@ from flask import Flask, json, request, redirect, session, url_for
 from flaskext.mysql import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from keys import *
 
 app = Flask(__name__)
 mysql = MySQL()
 app.secret_key = os.urandom(24)
 
 # MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = '<your-mysql-database-user>'
-app.config['MYSQL_DATABASE_PASSWORD'] = '<your-mysql-database-password>'
-app.config['MYSQL_DATABASE_DB'] = '<your-mysql-database-db>'
-app.config['MYSQL_DATABASE_HOST'] = '<your-mysql-database-host>'
+app.config['MYSQL_DATABASE_USER'] = YOUR_MYSQL_DATABASE_USER
+app.config['MYSQL_DATABASE_PASSWORD'] = YOUR_MYSQL_DATABASE_PASSWORD
+app.config['MYSQL_DATABASE_DB'] = YOUR_MYSQL_DATABASE_DB
+app.config['MYSQL_DATABASE_HOST'] = YOUR_MYSQL_DATABASE_HOST
 mysql.init_app(app)
 
 
