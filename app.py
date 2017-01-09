@@ -5,7 +5,7 @@ from flask import Flask, json, request, redirect, session, url_for
 from flaskext.mysql import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from keys import *
+from setup import *
 
 app = Flask(__name__)
 mysql = MySQL()

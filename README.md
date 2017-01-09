@@ -21,13 +21,13 @@ DBMS Project by [Devipriya Sarkar](https://github.com/DevipriyaSarkar) and [Nami
 
  To install using pip, run ```pip install -r requirements.txt```.
  
-3. Update the variables in ```app.py```,
+3. Update the variables in ```setup.py```,
  
  ```
- app.config['MYSQL_DATABASE_USER'] = '<your-mysql-database-user>'
- app.config['MYSQL_DATABASE_PASSWORD'] = '<your-mysql-database-password>'
- app.config['MYSQL_DATABASE_DB'] = '<your-mysql-database-db>'
- app.config['MYSQL_DATABASE_HOST'] = '<your-mysql-database-host>'
+    YOUR_MYSQL_DATABASE_USER = '<your-mysql-database-user>'
+    YOUR_MYSQL_DATABASE_PASSWORD = '<your-mysql-database-password>'
+    YOUR_MYSQL_DATABASE_DB = '<your-mysql-database-db>'
+    YOUR_MYSQL_DATABASE_HOST = '<your-mysql-database-host>'
  ```
 
 4. To run the application,
