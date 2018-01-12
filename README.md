@@ -42,7 +42,7 @@ DBMS Project by [Devipriya Sarkar](https://github.com/DevipriyaSarkar) and [Nami
  Alternatively you can use python -m flask:  
  
  ```
- $ export FLASK_APP=app.py  
+ $ set FLASK_APP=app.py  
  $ python -m flask run  
  * Running on http://0.0.0.0:5000/  
  ```  
